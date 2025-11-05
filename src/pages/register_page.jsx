@@ -6,7 +6,7 @@ const Register_Page = () =>{
     return(
         <div className="loginBackground">
         <div className="loginContent">
-        <Link to="/start_page" className="logoLink">
+        <Link to="/" className="logoLink">
             <img src="/images/logo.png" alt="TEMPLE OF GAINS" className="loginLogo" />
         </Link>
         <div className="loginBox">

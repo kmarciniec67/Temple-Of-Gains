@@ -147,7 +147,7 @@ const Start_Page = () =>{
         </div>
         <div className="contactDetailsBlock">
           ZDJ
-          <p>hello@reallygreatsite</p>
+          <p>contact@templeofgains.com</p>
         </div>
       </div>
     </div>
