@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 const Start_Page = () =>{
     return(
-        <div className="App">
+        <div className="landingPageContainer">
       <div className="blockLogin">
         <div className="loginLeft">
             ZDJ

@@ -1,24 +1,35 @@
 import './App.css';
+
 import {
   BrowserRouter as Router,
   Routes,
-  Route,
+  Route
 } from "react-router-dom";
 import Start_Page from './pages/start_page';
 import Login_Page from './pages/login_page';
 import Register_Page from './pages/register_page';
 import Dashboard from './pages/dashboard/dashboard';
 
+import Navbar from './pages/dashboard/components/Navbar';
+import Measurement from './pages/dashboard/measurement';
+
 function App() {
   return (
     <Router>
       <Routes>
-        <Route exact path="/" element={<Start_Page />} />
+        {/* publiczne */}
+        <Route path="/" element={<Start_Page />} />
         <Route path="/login" element={<Login_Page />} />
         <Route path="/register" element={<Register_Page />} />
+
+        {/* dashboard i zagniezdzone */}
         <Route path="/dashboard" element={<Dashboard />}>
-          {/*<Route path="settings" element={<Settings />} /> */}
+            <Route index element={<div />} />
+            {/* UWAGA: bez wiodącego "/" */}
+            <Route path="measurement" element={<Measurement />} />
         </Route>
+
+
       </Routes>
     </Router>
   );

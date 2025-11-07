@@ -1,0 +1,149 @@
+
+/* global CSS variables for responsive sizing (no px) */
+:global(:root) {
+	--sidebar-width: 15vw; /* default sidebar width */
+	--navbar-height: 4rem; /* default navbar height */
+}
+
+/* Top navbar */
+.navbar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: var(--navbar-height);
+	display: flex;
+	align-items: center;
+	padding: 0 1rem;
+	background: var(--bg-secondary);
+	z-index: 1000;
+	box-shadow: 0 0.0625rem 0.25rem rgba(0,0,0,0.08); /* 1px ~ 0.0625rem */
+  
+}
+
+.navBarContainer {
+  display: flex;
+  position: relative;
+  width: 100%;
+}
+
+.menuBars {
+	color: var(--text-primary);
+  background: var(--bg-primary);
+	text-decoration: none;
+	display: inline-flex;
+	align-items: center;
+  max-height: var(--navbar-height, 2rem);
+  
+}
+
+.navbarTitle {
+  margin-left: 1rem;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+}
+
+.menuBarsIcon {
+	cursor: pointer;
+}
+
+.navBarContainer .toggleThemeButton{
+  position: absolute;
+  right: 3rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Sidebar (hidden by default) */
+.navMenu {
+	/* responsive width: use a CSS variable or vw fallback (no px) */
+	width: var(--sidebar-width, 24vw);
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+	position: fixed;
+	/* hide off-screen using the same responsive unit */
+	left: calc(-1 * var(--sidebar-width, 24vw));
+	transition: left 0.3s ease;
+	/* keep sidebar under page content on wide screens so content isn't overlapped */
+	z-index: 600;
+	padding-top: 1.25rem;
+  background-color: var(--bg-secondary);
+  border-right: 0.12rem solid var(--border-color, rgba(0,0,0,0.08));
+
+}
+
+.navMenuActive {
+	left: 0; /* slide in */
+}
+
+.navMenuItems {
+	width: 100%;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+  margin-top: var(--navbar-height);
+}
+
+.navbarToggle {
+	width: 100%;
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	height: var(--navbar-height);
+	padding-left: 1rem;
+}
+
+.closeIcon {
+	color: var(--text-primary);
+	font-size: 1.6em;
+}
+
+.navText {
+	display: flex;
+	align-items: center;
+	padding: 0.75rem 1rem;
+}
+
+.navLink {
+	display: flex;
+	align-items: center;
+	color: var(--text-primary);
+	text-decoration: none;
+	width: 100%;
+}
+
+.navLink:hover {
+	background: rgba(255,255,255,0.04);
+}
+
+.icon {
+	margin-right: 0.75rem;
+	display: inline-flex;
+	align-items: center;
+	color: var(--text-primary);
+}
+
+.title {
+	font-size: 1rem;
+	color: var(--text-secondary);
+}
+
+/* push page content down under navbar */
+/* Helper: consumers can add padding-top equal to var(--navbar-height) to their pageContent or container */
+.spacer60 {
+	height: var(--navbar-height);
+}
+
+/* small screens: make sidebar cover most of viewport (overlay), don't push content */
+@media (max-width: 48em) {
+	.navMenu {
+		width: 80vw;
+		left: -80vw;
+		/* on small screens sidebar overlays content */
+		z-index: 1005;
+	}
+	.navMenuActive {
+		left: 0;
+	}
+}

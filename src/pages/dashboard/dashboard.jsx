@@ -1,18 +1,28 @@
 import React from "react";
-import styles from './Dashboard.module.css';
-import { Link } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
+import styles from "./Dashboard.module.css";
+import Navbar from "./components/Navbar";
+import { SidebarData } from "./components/SidebarData";
 
-const Dashboard = () =>{
-    return(
-        <div className={styles.dashboardBackground}>
-            <div className={styles.dashboardNavbar}>
+export default function Dashboard() {
+  const { pathname } = useLocation();
+  const isHome = pathname === "/dashboard";
 
-            </div>
-            <div className={styles.dashboardContent}>
+  return (
+    <div className={styles.dashboardContainer}>
+      <Navbar />
 
-            </div>
-        </div>
-    );
+      <main className={styles.pageContent}>
+        {isHome ? (
+          <>
+            <h1>Witaj, użytkowniku!</h1>
+            <p>Twój ostatni trening był 3 dni temu.</p>
+            {/* tu Twoje karty/statystyki */}
+          </>
+        ) : (
+          <Outlet />
+        )}
+      </main>
+    </div>
+  );
 }
-
-export default Dashboard;

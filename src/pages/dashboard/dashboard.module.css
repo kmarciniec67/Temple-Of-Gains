@@ -6,14 +6,48 @@
   width: 100%;
 }
 
-.dashboardNavbar{
-  background-color: #0083ac;
-  height: 100vh;
-  width:15%;
-}
-
 .dashboardContent{
-  background-color: #66758c;
+  background-color: var(--bg-primary);
   height: 100vh;
   width: 85%;
+}
+/* DASHBOARD PAGE */
+
+.pageContainer {
+  display: flex;
+  height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+/* some components expect .dashboardContainer (Dashboard.jsx uses styles.dashboardContainer) */
+.dashboardContainer {
+  display: flex;
+  height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+/* content area inside dashboard; ensure it sits below the fixed navbar */
+.pageContent {
+  flex: 1 1 auto;
+  padding-top: calc(var(--navbar-height, 4rem) + 1rem); /* navbar + small gap */
+  padding-left: 1rem;
+}
+
+/* ensure page content sits above sidebar on wide screens */
+.pageContent {
+  position: relative;
+  z-index: 800;
+}
+
+/* when the sidebar is open, push page content to the right so it isn't covered */
+:global(.sidebar-open) .pageContent {
+  margin-left: var(--sidebar-width, 24vw);
+  transition: margin-left 0.3s ease;
+}
+
+/* On small screens we don't push content; sidebar overlays instead */
+@media (max-width: 48em) {
+  :global(.sidebar-open) .pageContent {
+    margin-left: 0;
+  }
 }
