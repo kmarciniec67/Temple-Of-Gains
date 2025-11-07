@@ -3,154 +3,162 @@ import '../App.css';
 import { NavLink } from "react-router-dom";
 import { Link } from "react-router-dom";
 
+import photo from '../assets/fitness-training-dashboard.jpg';
+
 const Start_Page = () =>{
     return(
-        <div className="landingPageContainer">
-      <div className="blockLogin">
-        <div className="loginLeft">
-            ZDJ
-        </div>
-        <div className="loginRight">
-          LOGO
-          <h2>Temple_ of gains</h2>
-          <Link to="/login" className="logRegGoToBtn">
-          {/* <button className="logRegGoToBtn">ZALOGUJ SIĘ</button> */}
-          ZALOGUJ SIĘ
-          </Link>
-          <Link to="/register" className="logRegGoToBtn">
-          {/* <button className="logRegGoToBtn">UTWORZ KONTO</button> */}
-          UTWORZ KONTO
-          </Link>
-        </div>
-      </div>
-      <div className="keyFeatures">
-        <h2 className="kf">KEY FEATURES</h2>
-        <div className="keyFeaturesBlocks">
-          <div className="keyFeaturesBlock1">
-            ZDJ
-            <hr></hr>
-            TXT
+      <div className="landingPageContainer">
+        <header className="header">
+          <div className="headerContent">
+            <div className="logo">
+              <h2>Temple of Gains</h2>
+            </div>
+            <nav className="nav">
+              <a href="#features">Features</a>
+              <a href="#journey">Journey</a>
+              <a href="#contact">Contact</a>
+            </nav>
+            <Link to="/login" className={"loginButton landingButton"}>Zaloguj się!</Link>
           </div>
-          <div className="keyFeaturesBlock2">
-            ZDJ
-            <hr></hr>
-            TXT
+        </header>
+
+        <main className="mainContent">
+          <section className="heroSection">
+            <div className="heroContent">
+              <h1 className="heroTitle">Welcome to Temple of Gains</h1>
+            <p className="heroDescription">Your ultimate fitness companion.</p>
+
+              <Link to="/register" className={"registerButton landingButton"}>Zarejestruj się!</Link>
+            </div>
+
+            <div className="heroImage">
+              {/* <img src='../assets/fitness-training-dashboard.jpg" alt="Training dashboard' /> */}
+              <img src={photo} alt="Training dashboard" />
+            </div>
+            
+            
+          </section>
+
+          <section id="features" className="featuresSection">
+            <h2 className="sectionTitle">Main Features</h2>
+        <div className="featuresGrid">
+          <div className="featureCard">
+            <div className="featureIcon">📊</div>
+            <h3>Workout Tracking</h3>
+            <p>
+              Log every session with detailed metrics, weights, and performance data for comprehensive training history.
+            </p>
           </div>
-          <div className="keyFeaturesBlock3">
-            ZDJ
-            <hr></hr>
-            TXT
+          <div className="featureCard">
+            <div className="featureIcon">💪</div>
+            <h3>Progress Analysis</h3>
+            <p>Visual representation of your training gains. Track strength improvements and body metrics over time.</p>
+          </div>
+          <div className="featureCard">
+            <div className="featureIcon">🎯</div>
+            <h3>Smart Workouts</h3>
+            <p>AI-powered exercise recommendations tailored to your goals, fitness level, and available equipment.</p>
           </div>
         </div>
-      </div>
-      <div className="userPanel">
-        <h2>USER PANEL</h2>
-      </div>
-      <div className="userPanelBlocks">
-        <div className="userPanelBlockLeft">
+          </section>
+
+          {/* User Journey Section */}
+      <section className="journey" id="journey">
+        <h2 className="sectionTitle">Your Journey</h2>
+        <div className="journeySteps">
+          <div className="journeyItem">
+            <div className="journeyStep">1</div>
+            <h4>Create Account</h4>
+            <p>Easy registration process with your email</p>
+          </div>
+          <div className="journeyItem">
+            <div className="journeyStep">2</div>
+            <h4>Set Goals</h4>
+            <p>Define your fitness objectives</p>
+          </div>
+          <div className="journeyItem">
+            <div className="journeyStep">3</div>
+            <h4>Start Training</h4>
+            <p>Choose workouts and begin logging</p>
+          </div>
+          <div className="journeyItem">
+            <div className="journeyStep">4</div>
+            <h4>Track Progress</h4>
+            <p>Monitor improvements with analytics</p>
+          </div>
+          <div className="journeyItem">
+            <div className="journeyStep">5</div>
+            <h4>Achieve Goals</h4>
+            <p>Reach new fitness milestones</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Next Steps Section */}
+      <section className="nextSteps">
+        <h2 className="sectionTitle">Next Steps</h2>
+        <div className="stepsGrid">
+          <div className="stepCard">
+            <h4>Create an Account</h4>
+            <p>Quick registration process. Ready in seconds.</p>
+          </div>
+          <div className="stepCard">
+            <h4>Log Your First Workout</h4>
+            <p>Choose your exercise type and track performance.</p>
+          </div>
+          <div className="stepCard">
+            <h4>View Your Analytics</h4>
+            <p>See detailed insights and training patterns.</p>
+          </div>
+          <div className="stepCard">
+            <h4>Share Achievements</h4>
+            <p>Connect with the community and celebrate wins.</p>
+          </div>
+        </div>
+          </section>
+          
+          
+
+      {/* Contact Section */}
+      <section className="contact" id="contact">
+        <h2>Get in Touch</h2>
+        <p>Have questions? We're here to help with your fitness journey.</p>
+        <div className="contactInfo">
+          <a href="tel:+1234567890">📞 +1 (234) 567-890</a>
+          <a href="mailto:support@trainflow.com">📧 support@trainflow.com</a>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div className="footerContent">
+          <div className="footerSection">
+            <h5>TrainFlow</h5>
+            <p>Your ultimate fitness training companion.</p>
+          </div>
+          <div className="footerSection">
+            <h5>Quick Links</h5>
             <ul>
-              <li>Input fields for workout</li>
-              <li>Comprehensive workout history</li>
-              <li>Progress tracking metrics</li>
-            </ul>
-        </div>
-        <div className="userPanelBlockRight">
-          ZDJ
-        </div>
-      </div>
-      <div className="userJourney">
-        <h2>USER JOURNEY</h2>
-        <div className="userJourneyBlocks">
-          <div className="userJourneyBlock">
-            <h4>LOGIN</h4>
-            <p>Enter credentials</p>
-          </div>
-          <div className="userJourneyBlock">
-            <h4>INPUT</h4>
-            <p>Log workouts</p>
-          </div>
-          <div className="userJourneyBlock">
-            <h4>REVIEW</h4>
-            <p>View history</p>
-          </div>
-          <div className="userJourneyBlock">
-            <h4>ANALYZE</h4>
-            <p>Track Progress</p>
-          </div>
-          <div className="userJourneyBlock">
-            <h4>EXPLORE</h4>
-            <p>Check insights</p>
-          </div>
-        </div>
-      </div>
-      <div className="wrkAnaOV">
-        <h2 className="WAOh2">WORKOUT ANALYTICS OVERVIEW</h2>
-      </div>
-      <div className="WAOBlocks">
-        <div className="WAOBlockLeft">
-          ZDJ
-        </div>
-        <div className="WAOBlockRight">
-            <ul>
-              <li>Visualize your training progress</li>
-              <li>Analyze workout trends over time</li>
-              <li>Set and track fitness goals</li>
-            </ul>
-        </div>
-      </div>
-      <div className="nsBlocks">
-        <div className="nsBlockLeft">
-          <h4>NEXT STEPS</h4>
-          <hr></hr>
-        </div>
-        <div className="nsBlockRight">
-          <div className="nsBlockRightBlock">
-            <h4>CREATE AN ACOUNT</h4>
-          </div>
-          <div className="nsBlockRightBlock">
-            <p>Create your account</p>
-            <ul>
-              <li>Easy registration process</li>
-              <li>Verify your email</li>
+              <li>
+                <a href="#features">Features</a>
+              </li>
+              <li>
+                <a href="#journey">Journey</a>
+              </li>
+              <li>
+                <a href="#contact">Contact</a>
+              </li>
             </ul>
           </div>
-          <div className="nsBlockRightBlock">
-            <h4>Log Your Workout</h4>
-          </div>
-          <div className="nsBlockRightBlock">
-            <p>Create your account</p>
-            <ul>
-              <li>Easy registration process</li>
-              <li>Verify your email</li>
-            </ul>
-          </div>
-          <div className="nsBlockRightBlock">
-            <h4>Explore Analytics</h4>
-          </div>
-          <div className="nsBlockRightBlock">
-            <p>Create your account</p>
-            <ul>
-              <li>Easy registration process</li>
-              <li>Verify your email</li>
-            </ul>
-          </div>
+         
         </div>
-      </div>
-      <div className="contactBlock">
-        <h1>CONTACT US</h1>
-        <h2>Reach out for support and inquiries.</h2>
-      </div>
-      <div className="contactDetailsBlocks">
-        <div className="contactDetailsBlock">
-          ZDJ
-          <p>123-456-789</p>
+        <div className="footerBottom">
+          <p>&copy; 2025 Temple of Gains. All rights reserved.</p>
         </div>
-        <div className="contactDetailsBlock">
-          ZDJ
-          <p>contact@templeofgains.com</p>
-        </div>
+      </footer>
+
+        </main>
       </div>
-    </div>
     );
 }
 

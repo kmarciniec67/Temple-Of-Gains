@@ -1,7 +1,7 @@
 
 /* global CSS variables for responsive sizing (no px) */
 :global(:root) {
-	--sidebar-width: 15vw; /* default sidebar width */
+	--sidebar-width: 22vw; /* default sidebar width */
 	--navbar-height: 4rem; /* default navbar height */
 }
 
@@ -52,6 +52,7 @@
   right: 3rem;
   top: 50%;
   transform: translateY(-50%);
+  cursor: pointer;
 }
 
 /* Sidebar (hidden by default) */
@@ -65,16 +66,15 @@
 	/* hide off-screen using the same responsive unit */
 	left: calc(-1 * var(--sidebar-width, 24vw));
 	transition: left 0.3s ease;
-	/* keep sidebar under page content on wide screens so content isn't overlapped */
-	z-index: 600;
 	padding-top: 1.25rem;
-  background-color: var(--bg-secondary);
-  border-right: 0.12rem solid var(--border-color, rgba(0,0,0,0.08));
-
+  	background-color: var(--bg-secondary);
+  	border-right: 0.12rem solid var(--border-color, rgba(0,0,0,0.08));
+	margin-top: var(--navbar-height);
 }
 
 .navMenuActive {
 	left: 0; /* slide in */
+	margin-top: var(--navbar-height);
 }
 
 .navMenuItems {
@@ -82,7 +82,6 @@
 	padding: 0;
 	margin: 0;
 	list-style: none;
-  margin-top: var(--navbar-height);
 }
 
 .navbarToggle {
@@ -92,11 +91,13 @@
 	align-items: center;
 	height: var(--navbar-height);
 	padding-left: 1rem;
+	cursor: pointer;
 }
 
 .closeIcon {
 	color: var(--text-primary);
 	font-size: 1.6em;
+	cursor: pointer;
 }
 
 .navText {
