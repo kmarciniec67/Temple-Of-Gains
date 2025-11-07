@@ -1,0 +1,19 @@
+/* DASHBOARD PAGE */
+
+.dashboardBackground{
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+.dashboardNavbar{
+  background-color: #0083ac;
+  height: 100vh;
+  width:15%;
+}
+
+.dashboardContent{
+  background-color: #66758c;
+  height: 100vh;
+  width: 85%;
+}

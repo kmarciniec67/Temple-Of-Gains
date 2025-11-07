@@ -1,0 +1,7 @@
+/* MEASUREMENT PAGE */
+
+.measurementBackground{
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}

@@ -7,7 +7,7 @@ import {
 import Start_Page from './pages/start_page';
 import Login_Page from './pages/login_page';
 import Register_Page from './pages/register_page';
-import Dashboard from './pages/dashboard';
+import Dashboard from './pages/dashboard/dashboard';
 
 function App() {
   return (
@@ -16,7 +16,9 @@ function App() {
         <Route exact path="/" element={<Start_Page />} />
         <Route path="/login" element={<Login_Page />} />
         <Route path="/register" element={<Register_Page />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />}>
+          {/*<Route path="settings" element={<Settings />} /> */}
+        </Route>
       </Routes>
     </Router>
   );

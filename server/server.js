@@ -19,11 +19,11 @@ app.use(express.json());
 app.get('/api', (_req, res) => res.json({ ok: true }));
 
 // statyczne pliki Reacta
-app.use(express.static(path.join(__dirname, './dist')));
+app.use(express.static(path.join(__dirname, '../dist')));
 
 // załadowanie strony z pliku
 app.use('/',(req, res) => {
-  res.sendFile(path.join(__dirname, './dist/index.html'));
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 app.listen(PORT, () => {
