@@ -48,12 +48,20 @@ cd Temple-Of-Gains
 ```bash
 npm install
 
+# Instalacja ikon oraz mysql'a (w przypadku braku tych zależności)
+npm install react-icons
+npm install mysql2
+
 # W przypadku zablokowania skryptu przez PowerShell'a
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 3. Uruchom projekt w trybie deweloperskim
 ```bash
+# Aby uruchomić sam frontend (w trybie deweloperskim)
 npm run dev
+
+# Aby uruchomić frontend + backend
+node server/server.js
 ```
 
 ### Dostępne skrypty
