@@ -57,10 +57,10 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 3. Uruchom projekt w trybie deweloperskim
 ```bash
-# Aby uruchomić sam frontend (w trybie deweloperskim)
+# Aby uruchomić frontend (w trybie deweloperskim)
 npm run dev
 
-# Aby uruchomić frontend + backend
+# Aby uruchomić backend
 node server/server.js
 ```
 

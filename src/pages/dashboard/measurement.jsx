@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import styles from './measurement.module.css';
 // import { Link } from "react-router-dom"; 
 
-// Fetchowanie z bazy danych z tabeli 'measurements'
+// Fetchowanie z bazy danych z tabeli 'measurements' po zalogowaniu się
 const Measurement = () => {
   const [measurements, setMeasurements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,11 +10,16 @@ const Measurement = () => {
   useEffect(() => {
     const fetchMeasurements = async () => {
       try {
-        // TYLKO relative path! Vite proxy przekieruje na backend
-        const res = await fetch('/api/measurements');
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+          console.warn('Brak zalogowanego użytkownika');
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch(`/api/measurements?user_id=${user.id}`);
         const data = await res.json();
-        console.log('Fetched measurements:', data); // debug
+
         setMeasurements(data);
       } catch (err) {
         console.error('Fetch failed:', err);
@@ -26,18 +31,15 @@ const Measurement = () => {
     fetchMeasurements();
   }, []);
 
+
+  // Można pozmieniać (stricte frontend)
   if (loading) return <p>Loading...</p>;
   if (!measurements.length) return <p>No measurements found.</p>;
 
-  // Można zmienić (stricte frontend)
   return (
     <div className={styles.measurementBackground}>
       <div className={styles.measurementContainer}>
         <h1>My Measurements</h1>
-        {/* Previous (mozna usunąć)
-        <h1>Measurement Page</h1>
-        <p>Measurement page content</p>
-        */}
         {measurements.map(m => (
           <div key={m.id} className={styles.measurementCard}>
             <p><strong>Date:</strong> {new Date(m.date).toLocaleDateString()}</p>

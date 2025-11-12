@@ -25,22 +25,67 @@ app.get('/api', (_req, res) => res.json({ ok: true }));
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // -- endpoints --
-// Note: Ważne: Endpoint'y powinny się znajdować nad załadowaniem pliku
+// Note: Endpoint'y powinny się znajdować nad załadowaniem pliku
 // inaczej express złapie żądanie i wyśle plik strony jako odpowiedź
 
-/*
-  TODO: później podpiąć prawdziwe logowanie i przekazywać user_id
-  z tokena JWT lub sesji, zamiast DEFAULT_USER_ID
-*/
-const DEFAULT_USER_ID = 1; // hardcoded admin as logged in user
+// Endpoint logowania
+// Note: Testowe (konto:haslo) -> admin:admin123, janek:janek123, ania:ania123
+import crypto from 'crypto';
+
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  console.log('Login attempt:', username);
+
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Please fill in the form' });
+  }
+
+  try {
+    const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
+
+    if (rows.length === 0) {
+      return res.status(401).json({ error: 'Incorrect username or password' });
+    }
+
+    const user = rows[0];
+
+    // hashowanie hasła SHA256
+    const hash = crypto.createHash('sha256').update(password).digest('hex');
+
+    if (hash !== user.password_hash) {
+      return res.status(401).json({ error: 'Incorrect username or password' });
+    }
+
+    // Zalogowano poprawnie
+    console.log(`Użytkownik ${username} zalogowany`);
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email
+      }
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
 
 // Endpoint zwracający pomiary użytkownika
-app.get('/api/measurements', async (_req, res) => {
-  console.log('test1');
+// Note: brane są dane z kwerendy logowania i przechowywane w localStorage, nie wiem czy to dobrze, 
+// ewneutalnie będzie można zmienić na pobieranie ich z tokena JWT lub sesji, zamiast 'userId'
+app.get('/api/measurements', async (req, res) => {
+  const userId = req.query.user_id;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'No user_id in query' }); // Tak powinno być przy deployu
+  }
+
   try {
     const [rows] = await pool.query(
       'SELECT * FROM measurements WHERE user_id = ? ORDER BY date DESC',
-      [DEFAULT_USER_ID] // <- na razie hardcoded
+      [userId] 
     );
     // console.log('Rows from DB:', rows); // DEBUG
     res.json(rows);

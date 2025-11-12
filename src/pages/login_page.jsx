@@ -1,33 +1,78 @@
-import React from "react";
+import React, { useState } from "react";
 import '../App.css';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-const Login_Page = () =>{
-    return(
-        <div className="loginBackground">
-            <div className="loginContent">
-            <Link to="/" className="logoLink">
-                <img src="/images/logo.png" alt="TEMPLE OF GAINS" className="loginLogo" />
-            </Link>
-            <div className="loginBox">
-                <h2>LOGOWANIE</h2>
-                <form className="loginForm" autoComplete="off">
-                    <label htmlFor ="username">Nazwa użytkownika</label>
-                    <input id="username" type="text" placeholder="login"></input>
-                    <label htmlFor ="password">Hasło</label>
-                    <input id="password" type="password" placeholder="haslo"></input>
-                </form>
+const Login_Page = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-                <Link to="/dashboard" className="logRegGoToBtn" onClick={testFn}>Zaloguj!</Link>
-                <p>Nie posiadasz konta? <Link to="/register">Zarejestruj się!</Link></p>
-            </div>
-            </div>
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Błąd logowania');
+        return;
+      }
+
+      console.log('Zalogowano:', data.user);
+      // Tymczasowo zapisujemy usera w localStorage
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Błąd połączenia z serwerem');
+      console.error(err);
+    }
+  };
+
+  return (
+    <div className="loginBackground">
+      <div className="loginContent">
+        <Link to="/" className="logoLink">
+          <img src="/images/logo.png" alt="TEMPLE OF GAINS" className="loginLogo" />
+        </Link>
+        <div className="loginBox">
+          <h2>LOGOWANIE</h2>
+          <form className="loginForm" onSubmit={handleLogin} autoComplete="off">
+            <label htmlFor="username">Nazwa użytkownika</label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              placeholder="login"
+            />
+            <label htmlFor="password">Hasło</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="haslo"
+            />
+
+            <button type="submit" className="logRegGoToBtn">Zaloguj!</button>
+          </form>
+
+          {error && <p style={{ color: 'red' }}>{error}</p>}
+
+          <p>Nie posiadasz konta? <Link to="/register">Zarejestruj się!</Link></p>
         </div>
-    );
-}
-
-function testFn(){
-    console.log("Test login");
+      </div>
+    </div>
+  );
 }
 
 export default Login_Page;
