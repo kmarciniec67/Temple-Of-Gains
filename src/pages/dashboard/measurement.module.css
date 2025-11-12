@@ -1,7 +1,23 @@
 /* MEASUREMENT PAGE */
 
-.measurementBackground{
+.measurementBackground {
+  /* Previous (można zmienić)
   display: flex;
   height: 100vh;
   width: 100%;
+  */
+  display: flex;
+  width: 100%;
+}
+
+.measurementContainer {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.measurementCard {
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
