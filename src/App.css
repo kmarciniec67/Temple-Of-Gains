@@ -1,5 +1,14 @@
 /* MAIN PAGE */
 
+body, html, #root {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .landingPageContainer {
   text-align: center;
   background-color: #1e1e2f;
@@ -578,6 +587,7 @@
   text-decoration: none;
   text-align: center;
   color: white;
+  font-size: 1rem;
 }
 
 
