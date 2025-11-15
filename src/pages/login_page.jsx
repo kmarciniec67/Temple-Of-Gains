@@ -27,9 +27,8 @@ const Login_Page = () => {
       }
 
       console.log('Zalogowano:', data.user);
-      // Tymczasowo zapisujemy usera w localStorage
+      localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-
       navigate('/dashboard');
     } catch (err) {
       setError('Błąd połączenia z serwerem');

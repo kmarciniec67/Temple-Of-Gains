@@ -1,35 +1,59 @@
 import React, { useEffect, useState } from "react";
 import styles from './measurement.module.css';
+import { useNavigate } from "react-router-dom";
 // import { Link } from "react-router-dom"; 
 
 // Fetchowanie z bazy danych z tabeli 'measurements' po zalogowaniu się
 const Measurement = () => {
-  const [measurements, setMeasurements] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const [measurements, setMeasurements] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate(); // Hook do nawigacji
 
-  useEffect(() => {
-    const fetchMeasurements = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user) {
-          console.warn('Brak zalogowanego użytkownika');
-          setLoading(false);
-          return;
-        }
+    useEffect(() => {
+        const fetchMeasurements = async () => {
+            try {
+                const token = localStorage.getItem('token'); // Wyciągamy paszport z kieszeni
 
-        const res = await fetch(`/api/measurements?user_id=${user.id}`);
-        const data = await res.json();
+                if (!token) {
+                    console.warn('Brak tokena - użytkownik nie jest zalogowany');
+                    setLoading(false);
+                    navigate('/login'); // Opcjonalnie: przekieruj do logowania
+                    return;
+                }
 
-        setMeasurements(data);
-      } catch (err) {
-        console.error('Fetch failed:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+                // Wysyłamy zapytanie z nagłówkiem Authorization
+                // Zwróć uwagę: nie wysyłamy już user_id w URL, backend weźmie go z tokena
+                const res = await fetch('/api/measurements', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // "Oto mój paszport"
+                    }
+                });
 
-    fetchMeasurements();
-  }, []);
+                if (res.status === 401 || res.status === 403) {
+                    console.error("Sesja wygasła lub brak uprawnień");
+                    localStorage.removeItem('token'); // Czyścimy nieprawidłowy token
+                    localStorage.removeItem('user');
+                    navigate('/login'); // Wyrzucamy użytkownika do logowania
+                    return;
+                }
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+
+                const data = await res.json();
+                setMeasurements(data);
+            } catch (err) {
+                console.error('Fetch failed:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMeasurements();
+    }, [navigate]);
 
 
   // Można pozmieniać (stricte frontend)
