@@ -29,12 +29,17 @@
 
 .menuBars {
 	color: var(--text-primary);
-  background: var(--bg-primary);
+  	background: var(--bg-primary);
 	text-decoration: none;
 	display: inline-flex;
 	align-items: center;
-  max-height: var(--navbar-height, 2rem);
-  
+ 	max-height: var(--navbar-height, 2rem);
+  	padding: 0.5rem 1rem;
+  	border-radius: 0.5rem;
+}
+
+.menuBars:hover {
+  background: var(--bg-hover);
 }
 
 .navbarTitle {
@@ -45,6 +50,16 @@
 
 .menuBarsIcon {
 	cursor: pointer;
+}
+
+.logoutButton {
+  position: absolute;
+  bottom: 6rem;
+  cursor: pointer;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: large;
+  
 }
 
 .navBarContainer .toggleThemeButton{
@@ -100,6 +115,10 @@
 	cursor: pointer;
 }
 
+.closeIcon:hover {
+	color: var(--accet-primary);
+}
+
 .navText {
 	display: flex;
 	align-items: center;
@@ -114,8 +133,8 @@
 	width: 100%;
 }
 
-.navLink:hover {
-	background: rgba(255,255,255,0.04);
+li.navText:hover {
+	background: var(--bg-hover);
 }
 
 .icon {
