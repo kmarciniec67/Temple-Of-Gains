@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 const Register_Page = () =>{
-    const Navigate = useNavigate();
+    const navigate = useNavigate();
 
     const [values, setValues] = useState({
         username: '',
@@ -111,16 +111,61 @@ const Register_Page = () =>{
         return Object.keys(tempErrors).length === 0;
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validate()) console.log("Validation failed");
+        setErrors({});
+
+        if (!validate()) {
+            console.log("Validation failed");
+            return;
+        } 
+        
+        try {
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: values.username,
+                    email: values.email,
+                    password: values.password,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                // błąd zwrócony przez backend (np. zajęty login / email)
+                setErrors({ general: data?.error || 'Błąd rejestracji' });
+                console.error('Register error:', data);
+                alert("Error: " + (data?.error || 'Błąd rejestracji'));
+                return;
+            }
+
+            console.log('Rejestracja udana:', data);
+            alert("Rejestracja udana! Dziękujemy za założenie konta.");
+
+            // opcjonalnie: zapis usera jak przy logowaniu
+            if (data?.user) {
+                localStorage.setItem('user', JSON.stringify(data.user));
+            }
+
+            navigate('/dashboard');
+            
+        } catch (err) {
+            console.error('Error during registration:', err);
+            setErrors({ general: 'Błąd połączenia z serwerem' });
+        }
+
+
+        /*
         else {
             // wyslij do bazki
             console.log("Form submitted successfully");
 
             // if validate true, go to app 
-            Navigate("/dashboard");
+            navigate("/dashboard");
         }
+        */
     };
 
     return(

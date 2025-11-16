@@ -72,6 +72,52 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// Endpoint rejestracji
+app.post('/api/register', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: 'Missing data' });
+    }
+
+    // sprawdzanie czy jest juz taki uzytkownik o takim username lub emailu
+    const [existsUser] = await pool.query(
+      'SELECT id FROM users WHERE username = ?',
+      [username]
+    );
+
+    const [existsEmail] = await pool.query(
+      'SELECT id FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (existsUser.length > 0)  {
+      return res.status(409).json({ error: 'Nazwa użytkownika jest już zajęta.' });
+    }
+
+    if (existsEmail.length > 0)  {
+      return res.status(409).json({ error: 'E-mail jest już użyty przez innego użytkownika. Jeśli nie pamiętasz hasła, skontaktuj się z administratorem.' });
+    }
+
+    // HASHOWANIE SHA256 
+    const hash = crypto.createHash('sha256').update(password).digest('hex');
+
+    // zapis do bazy
+    await pool.query(
+      'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
+      [username, email, hash]
+    );
+
+    console.log(`Użytkownik ${username} zarejestrowany`);
+    return res.status(201).json({ success: true });
+
+  } catch (err) {
+    console.error('Register error:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 // Endpoint zwracający pomiary użytkownika
 // Note: brane są dane z kwerendy logowania i przechowywane w localStorage, nie wiem czy to dobrze, 
 // ewneutalnie będzie można zmienić na pobieranie ich z tokena JWT lub sesji, zamiast 'userId'
