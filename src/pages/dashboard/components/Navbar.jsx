@@ -69,6 +69,7 @@ function NavBar() {
                                 </li>
                             );
                         })}
+                        <button className={`${styles.menuBars} ${styles.logoutButton}`}>Wyloguj się</button>
                     </ul>
                 </nav>
             </IconContext.Provider>

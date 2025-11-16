@@ -21,10 +21,11 @@ code {
   --bg-primary: #1a1a1a;
   --bg-secondary: #2d2d2d;
   --bg-tertiary: #3a3a3a;
+  --bg-hover:#1e1d1d;
   --text-primary: #ffffff;
   --text-secondary: #b0b0b0;
   --border-color: #404040;
-  --accent-primary: #00a8e8;
+  --accent-primary: #24719a;
   --accent-secondary: #00d4ff;
   --chart-line: #00d4ff;
   --input-bg: #252525;
@@ -37,6 +38,7 @@ code {
   --bg-primary: #f5f5f5;
   --bg-secondary: #ffffff;
   --bg-tertiary: #f0f0f0;
+  --bg-hover: #e1e1e1;
   --text-primary: #1a1a1a;
   --text-secondary: #666666;
   --border-color: #e0e0e0;

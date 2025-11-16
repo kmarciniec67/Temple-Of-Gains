@@ -12,6 +12,10 @@ import Dashboard from './pages/dashboard/dashboard';
 
 import Navbar from './pages/dashboard/components/Navbar';
 import Measurement from './pages/dashboard/measurement';
+import Plans from './pages/dashboard/plans';
+import Exercises from './pages/dashboard/exercises';
+import History from './pages/dashboard/history';
+import Settings from './pages/dashboard/settings';
 
 function App() {
   return (
@@ -27,6 +31,10 @@ function App() {
             <Route index element={<div />} />
             {/* UWAGA: bez wiodącego "/" */}
             <Route path="measurement" element={<Measurement />} />
+            <Route path="plans" element={<Plans />} />
+            <Route path="exercises" element={<Exercises />} />
+            <Route path="history" element={<History />} />
+            <Route path="settings" element={<Settings />} />
         </Route>
 
 

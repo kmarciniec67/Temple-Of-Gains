@@ -20,7 +20,9 @@
 
 | Warstwa | Technologia |
 |----------|--------------|
-| front | |
+| front | React |
+| backend | Express |
+| baza danych | MySQL |
 
 ---
 
@@ -55,7 +57,13 @@ npm install mysql2
 # W przypadku zablokowania skryptu przez PowerShell'a
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
-3. Uruchom projekt w trybie deweloperskim
+
+3. Uruchom zbudowany projekt
+```bash
+# Aby uruchomić zbudowany projekt
+npm run preview
+
+4. Uruchom projekt w trybie deweloperskim
 ```bash
 # Aby uruchomić frontend (w trybie deweloperskim)
 npm run dev
@@ -75,12 +83,12 @@ node server/server.js
 ## 👥 Autorzy i współpraca
 | username | rola | zakres |
 |----------|--------------| ----------------|
-| @comros | |
-| @kmarciniec67 | |
-| @knocek | |
+| [@comros](https://github.com/comros) | |
+| [@kmarciniec67](https://github.com/kmarciniec67) | |
+| [@knocek](https://github.com/knocek) | |
 
 ---
 
 ## Licencja
 
-Projekt stworzony w ramach kursu Inżynieria Oprogramowania. Do użytku edukacyjnego.
+Projekt stworzony w ramach kursu Inżynieria Oprogramowania (AGH, Informatyka Techniczna, 3 semestr). Do użytku edukacyjnego.
