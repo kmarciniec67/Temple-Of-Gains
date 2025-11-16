@@ -3,10 +3,18 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import {dirname} from 'path';
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken'; // NOWE
+import cors from 'cors';        // NOWE
+import dotenv from 'dotenv';    // NOWE
 
 // mysql database
 import mysql from 'mysql2/promise';
 
+// Ładowanie zmiennych środowiskowych z .env
+dotenv.config();
+
+// Inicjalizacja Express i ustawienia ścieżek
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -17,59 +25,95 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+app.use(cors()); // Pozwalamy na zapytania z zewnątrz
+
+// Konfiguracja bazy danych z pliku .env
+const pool = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'temple_of_gains'
+});
+
+// Statyczne pliki Reacta
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// --- MIDDLEWARE (BRAMKARZ) ---
+// Ta funkcja sprawdza, czy klient ma ważny "paszport" (token)
+function authenticateToken(req, res, next) {
+    // Token przychodzi w nagłówku: Authorization: Bearer TWOJ_TOKEN
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bierzemy to co po "Bearer"
+
+    if (token == null) return res.sendStatus(401); // Nie ma tokena? Wynocha (Unauthorized)
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            console.log("Błąd weryfikacji tokena:", err);
+            return res.sendStatus(403); // Token sfałszowany lub przeterminowany
+        }
+
+        req.user = user; // Zapisujemy dane z tokena w obiekcie żądania
+        console.log("Middleware: Zidentyfikowano użytkownika:", user); // DEBUG
+        next(); // Droga wolna
+    });
+}
 
 // API test
 app.get('/api', (_req, res) => res.json({ ok: true }));
 
-// statyczne pliki Reacta
-app.use(express.static(path.join(__dirname, '../dist')));
 
 // -- endpoints --
-// Note: Endpoint'y powinny się znajdować nad załadowaniem pliku
-// inaczej express złapie żądanie i wyśle plik strony jako odpowiedź
 
 // Endpoint logowania
-// Note: Testowe (konto:haslo) -> admin:admin123, janek:janek123, ania:ania123
-import crypto from 'crypto';
-
 app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body;
-  console.log('Login attempt:', username);
+    const { username, password } = req.body;
+    console.log('Login attempt:', username);
 
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Please fill in the form' });
-  }
-
-  try {
-    const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
-
-    if (rows.length === 0) {
-      return res.status(401).json({ error: 'Incorrect username or password' });
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Please fill in the form' });
     }
 
-    const user = rows[0];
+    try {
+        const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
 
-    // hashowanie hasła SHA256
-    const hash = crypto.createHash('sha256').update(password).digest('hex');
+        if (rows.length === 0) {
+            return res.status(401).json({ error: 'Incorrect username or password' });
+        }
 
-    if (hash !== user.password_hash) {
-      return res.status(401).json({ error: 'Incorrect username or password' });
+        const user = rows[0];
+
+        // hashowanie hasła SHA256
+        const hash = crypto.createHash('sha256').update(password).digest('hex');
+
+        if (hash !== user.password_hash) {
+            return res.status(401).json({ error: 'Incorrect username or password' });
+        }
+
+        // Generowanie tokena
+        const token = jwt.sign(
+            { id: user.id, username: user.username },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        // Zalogowano poprawnie
+        console.log(`Użytkownik ${username} zalogowany`);
+
+        // Odsyłamy token do frontendu razem z danymi użytkownika
+        res.json({
+            success: true,
+            token: token,
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email
+            }
+        });
+    } catch (err) {
+        console.error('Login error:', err);
+        res.status(500).json({ error: 'Database error' });
     }
-
-    // Zalogowano poprawnie
-    console.log(`Użytkownik ${username} zalogowany`);
-    res.json({
-      success: true,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email
-      }
-    });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Database error' });
-  }
 });
 
 // Endpoint rejestracji
@@ -119,69 +163,44 @@ app.post('/api/register', async (req, res) => {
 });
 
 // Endpoint zwracający pomiary użytkownika
-// Note: brane są dane z kwerendy logowania i przechowywane w localStorage, nie wiem czy to dobrze, 
-// ewneutalnie będzie można zmienić na pobieranie ich z tokena JWT lub sesji, zamiast 'userId'
-app.get('/api/measurements', async (req, res) => {
-  const userId = req.query.user_id;
+// POPRAWIONY: Pobiera ID z tokena (req.user.id), a nie z URL
+app.get('/api/measurements', authenticateToken, async (req, res) => {
+    // TU BYŁ BŁĄD: const userId = req.query.user_id;
+    // POPRAWKA:
+    const userId = req.user.id;
 
-  if (!userId) {
-    return res.status(400).json({ error: 'No user_id in query' }); // Tak powinno być przy deployu
-  }
+    console.log(`DEBUG: Endpoint measurements widzi User ID: ${userId}`);
 
-  try {
-    const [rows] = await pool.query(
-      'SELECT * FROM measurements WHERE user_id = ? ORDER BY date DESC',
-      [userId] 
-    );
-    // console.log('Rows from DB:', rows); // DEBUG
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Database error' });
-  }
+    try {
+        const [rows] = await pool.query(
+            'SELECT * FROM measurements WHERE user_id = ? ORDER BY date DESC',
+            [userId]
+        );
+
+        console.log(`DEBUG: Znaleziono ${rows.length} pomiarów`); // DEBUG
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 // -- endpoints --
 
-// załadowanie strony z pliku
-app.use('/',(req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'));
+// załadowanie strony z pliku (obsługa routingu Reacta)
+app.use((req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
 
-// Mysql connection 
-// TODO: Zmienić hardcoded dane i zaimplementować .env
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'temple_of_gains'
-});
-
-/*
-// Note: Przykładowa implementajca .env
-// npm install dotenv 
-import dotenv from 'dotenv';
-dotenv.config();
-
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
-});
-*/
-
-// Database connection test
-// Note: Async jest tu lepszy od 'app.get', bo nie ma doczynienia z zapytaniem od przeglądarki
-(async () => { 
-  try {
-    //const [rows] = await pool.query('SELECT * FROM users'); // DEBUG
-    console.log('Połączono z bazą MySQL!'); // Test query:', rows[0]);
-  } catch (err) {
-    console.error('Błąd połączenia z bazą:', err.message);
-  }
+// Test połączenia z bazą
+(async () => {
+    try {
+        console.log('Połączono z bazą MySQL!');
+    } catch (err) {
+        console.error('Błąd połączenia z bazą:', err.message);
+    }
 })();
