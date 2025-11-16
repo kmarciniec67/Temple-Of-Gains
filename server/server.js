@@ -4,9 +4,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import {dirname} from 'path';
 import crypto from 'crypto';
-import jwt from 'jsonwebtoken'; // NOWE
-import cors from 'cors';        // NOWE
-import dotenv from 'dotenv';    // NOWE
+import jwt from 'jsonwebtoken';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 
 // mysql database
 import mysql from 'mysql2/promise';
@@ -26,6 +27,7 @@ const PORT = 3000;
 
 app.use(express.json());
 app.use(cors()); // Pozwalamy na zapytania z zewnątrz
+app.use(cookieParser());
 
 // Konfiguracja bazy danych z pliku .env
 const pool = mysql.createPool({
@@ -39,23 +41,19 @@ const pool = mysql.createPool({
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // --- MIDDLEWARE (BRAMKARZ) ---
-// Ta funkcja sprawdza, czy klient ma ważny "paszport" (token)
 function authenticateToken(req, res, next) {
-    // Token przychodzi w nagłówku: Authorization: Bearer TWOJ_TOKEN
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bierzemy to co po "Bearer"
+    const token = req.cookies.token; // <<< ODCZYTAJ TOKEN Z CIASTECZKA
 
-    if (token == null) return res.sendStatus(401); // Nie ma tokena? Wynocha (Unauthorized)
+    if (token == null) return res.sendStatus(401);
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
             console.log("Błąd weryfikacji tokena:", err);
-            return res.sendStatus(403); // Token sfałszowany lub przeterminowany
+            return res.sendStatus(403);
         }
-
-        req.user = user; // Zapisujemy dane z tokena w obiekcie żądania
-        console.log("Middleware: Zidentyfikowano użytkownika:", user); // DEBUG
-        next(); // Droga wolna
+        req.user = user;
+        console.log("Middleware: Zidentyfikowano użytkownika:", user);
+        next();
     });
 }
 
@@ -101,9 +99,14 @@ app.post('/api/login', async (req, res) => {
         console.log(`Użytkownik ${username} zalogowany`);
 
         // Odsyłamy token do frontendu razem z danymi użytkownika
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 3600000
+        });
         res.json({
             success: true,
-            token: token,
             user: {
                 id: user.id,
                 username: user.username,
@@ -195,6 +198,12 @@ app.get('/api/user-settings', authenticateToken, async (req, res) => {
         console.error(err);
         res.status(500).json({ error: 'Database error' });
     }
+});
+
+// Endpoint wylogowania
+app.post('/api/logout', (req, res) => {
+    res.clearCookie('token', { httpOnly: true, sameSite: 'strict' });
+    res.json({ success: true, message: "Wylogowano" });
 });
 
 // załadowanie strony z pliku (obsługa routingu Reacta)

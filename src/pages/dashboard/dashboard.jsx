@@ -12,20 +12,15 @@ export default function Dashboard() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // NAJPIERW SPRAWDZAMY TOKEN
-        const token = localStorage.getItem("token");
-        if (!token) {
-            console.log("Dashboard: Brak tokena, przekierowanie do logowania.");
-            navigate('/login');
-            return; // Przerywamy, aby nie renderować reszty
-        }
-
-        // Jak token jest, to pobieramy dane usera
         const userData = localStorage.getItem("user");
-        if (userData) {
-            const parsed = JSON.parse(userData);
-            setUsername(parsed.username);
+        if (!userData) {
+            console.log("Dashboard: Brak danych usera, przekierowanie do logowania.");
+            navigate('/login');
+            return;
         }
+        const parsed = JSON.parse(userData);
+        setUsername(parsed.username);
+
         setIsLoading(false);
     }, [navigate]);
 

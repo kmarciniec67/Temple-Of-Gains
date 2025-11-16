@@ -12,28 +12,16 @@ const Measurement = () => {
     useEffect(() => {
         const fetchMeasurements = async () => {
             try {
-                const token = localStorage.getItem('token'); // Wyciągamy paszport z kieszeni
-
-                if (!token) {
-                    console.warn('Brak tokena - użytkownik nie jest zalogowany');
-                    setLoading(false);
-                    navigate('/login'); // Opcjonalnie: przekieruj do logowania
-                    return;
-                }
-
-                // Wysyłamy zapytanie z nagłówkiem Authorization
-                // Zwróć uwagę: nie wysyłamy już user_id w URL, backend weźmie go z tokena
                 const res = await fetch('/api/measurements', {
                     method: 'GET',
+                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` // "Oto mój paszport"
                     }
                 });
 
                 if (res.status === 401 || res.status === 403) {
                     console.error("Sesja wygasła lub brak uprawnień");
-                    localStorage.removeItem('token'); // Czyścimy nieprawidłowy token
                     localStorage.removeItem('user');
                     navigate('/login'); // Wyrzucamy użytkownika do logowania
                     return;

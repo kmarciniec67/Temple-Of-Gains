@@ -12,25 +12,15 @@ const Settings = () => {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    console.warn('Brak tokena');
-                    setLoading(false);
-                    navigate('/login');
-                    return;
-                }
-
                 const res = await fetch('/api/user-settings', { // ZMIANA ENDPOINTU
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` // WYSYŁANIE TOKENA
           }
         });
 
         if (res.status === 401 || res.status === 403) {
           console.error("Sesja wygasła");
-          localStorage.removeItem('token');
           localStorage.removeItem('user');
           navigate('/login');
           return;

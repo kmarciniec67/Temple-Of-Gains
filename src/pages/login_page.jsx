@@ -27,7 +27,6 @@ const Login_Page = () => {
       }
 
       console.log('Zalogowano:', data.user);
-      localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       navigate('/dashboard');
     } catch (err) {

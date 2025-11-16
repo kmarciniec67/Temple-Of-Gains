@@ -11,25 +11,16 @@ const Exercises = () => {
     useEffect(() => {
         const fetchExercises = async () => {
             try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    console.warn('Brak tokena');
-                    setLoading(false);
-                    navigate('/login');
-                    return;
-                }
-
                 const res = await fetch('/api/exercises', { // ZMIANA ENDPOINTU
                     method: 'GET',
+                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` // WYSYŁANIE TOKENA
           }
         });
 
         if (res.status === 401 || res.status === 403) {
           console.error("Sesja wygasła");
-          localStorage.removeItem('token');
           localStorage.removeItem('user');
           navigate('/login');
           return;
@@ -40,7 +31,7 @@ const Exercises = () => {
         }
 
         const data = await res.json();
-        setExercises(data); // ZAPIS DANYCH DO STANU
+        setExercises(data);
       } catch (err) {
         console.error('Fetch failed:', err);
       } finally {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Link, NavLink } from "react-router-dom"
+import { Link, NavLink, useNavigate } from "react-router-dom"
 import styles from "./Navbar.module.css"
 import { IconContext } from "react-icons"
 import * as FaIcons from "react-icons/fa"
@@ -10,6 +10,7 @@ import { useTheme } from "../../../context/ThemeContext";
 function NavBar() {
     const [sidebar, setSidebar] = useState(false);
     const { isDark, toggle } = useTheme();
+    const navigate = useNavigate();
 
     // sidebar controls
         const toggleSidebar = () => setSidebar((s) => !s);
@@ -28,6 +29,23 @@ function NavBar() {
                         }
                     };
             }, [sidebar]);
+    const handleLogout = async () => {
+        try {
+            await fetch('/api/logout', {
+                method: 'POST',
+                credentials: 'include', // <<< WAŻNE, aby wysłać cookie
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+        } catch (err) {
+            console.error("Błąd podczas wylogowywania:", err);
+        } finally {
+            // Niezależnie od błędu, czyścimy front i przekierowujemy
+            localStorage.removeItem('user');
+            navigate('/login');
+        }
+    };
 
     return (
         <>
@@ -69,7 +87,7 @@ function NavBar() {
                                 </li>
                             );
                         })}
-                        <button className={`${styles.menuBars} ${styles.logoutButton}`}>Wyloguj się</button>
+                        <button className={`${styles.menuBars} ${styles.logoutButton}`} onClick={handleLogout}>Wyloguj się</button>
                     </ul>
                 </nav>
             </IconContext.Provider>
