@@ -1,25 +1,37 @@
-import React from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom"; // IMPORTUJEMY useNavigate
 import styles from "./Dashboard.module.css";
 import Navbar from "./components/Navbar";
-import { SidebarData } from "./components/SidebarData";
-import { useEffect, useState } from "react";
 
 export default function Dashboard() {
-  const { pathname } = useLocation();
-  const isHome = pathname === "/dashboard";
+    const { pathname } = useLocation();
+    const isHome = pathname === "/dashboard";
+    const navigate = useNavigate(); // DODAJEMY HOOK NAWIGACJI
 
-  // Wyświetlanie nazwy użytkownika
-  const [username, setUsername] = useState("");
+    const [username, setUsername] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // pobierz dane z localStorage
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      const parsed = JSON.parse(userData);
-      setUsername(parsed.username);
+    useEffect(() => {
+        // NAJPIERW SPRAWDZAMY TOKEN
+        const token = localStorage.getItem("token");
+        if (!token) {
+            console.log("Dashboard: Brak tokena, przekierowanie do logowania.");
+            navigate('/login');
+            return; // Przerywamy, aby nie renderować reszty
+        }
+
+        // Jak token jest, to pobieramy dane usera
+        const userData = localStorage.getItem("user");
+        if (userData) {
+            const parsed = JSON.parse(userData);
+            setUsername(parsed.username);
+        }
+        setIsLoading(false);
+    }, [navigate]);
+
+    if (isLoading) {
+        return null; // Możesz tu dać komponent <Spinner />
     }
-  }, []);
 
   return (
     <div className={styles.dashboardContainer}>

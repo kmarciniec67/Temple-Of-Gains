@@ -140,6 +140,62 @@ app.get('/api/measurements', authenticateToken, async (req, res) => {
 });
 
 // -- endpoints --
+// Endpoint zwracający plany treningowe użytkownika
+app.get('/api/plans', authenticateToken, async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const [rows] = await pool.query(
+            'SELECT * FROM workoutplans WHERE user_id = ?',
+            [userId]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// Endpoint zwracający bazę wszystkich ćwiczeń (publiczny, ale chroniony)
+app.get('/api/exercises', authenticateToken, async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM exercises ORDER BY body_part, name');
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+// Endpoint zwracający historię treningów użytkownika
+app.get('/api/history', authenticateToken, async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const [rows] = await pool.query(
+            'SELECT * FROM workouts WHERE user_id = ? ORDER BY date DESC',
+            [userId]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+// Endpoint zwracający dane usera (do ustawień)
+app.get('/api/user-settings', authenticateToken, async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const [rows] = await pool.query(
+            'SELECT id, username, email FROM users WHERE id = ?',
+            [userId]
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json(rows[0]); // Zwracamy tylko obiekt użytkownika, nie tablicę
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
 
 // załadowanie strony z pliku (obsługa routingu Reacta)
 app.use((req, res) => {
