@@ -92,7 +92,9 @@ CREATE TABLE `users` (
   `username` varchar(100) COLLATE utf8mb4_polish_ci NOT NULL,
   `email` varchar(255) COLLATE utf8mb4_polish_ci NOT NULL,
   `password_hash` varchar(255) COLLATE utf8mb4_polish_ci NOT NULL,
-  `created_at` datetime DEFAULT current_timestamp()
+  `created_at` datetime DEFAULT current_timestamp(),
+  UNIQUE key `uniq_username` (`username`),
+  UNIQUE key `uniq_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_polish_ci;
 
 -- --------------------------------------------------------
