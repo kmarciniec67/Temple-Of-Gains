@@ -136,6 +136,13 @@ body, html, #root {
   box-shadow: 0 20px 40px rgba(37, 99, 235, 0.2);
 }
 
+.heroDescription {
+  justify-content: center;
+  text-align: center;
+  margin: 0 auto;
+  margin-bottom: 2rem;
+}
+
 /* Features Section */
 .features {
   background-color: #1a2847;
@@ -332,11 +339,19 @@ body, html, #root {
   margin-bottom: 2rem;
 }
 
+.footerSection {
+  text-align: center;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+}
+
 .footerSection h5 {
   color: #f9fafb;
   margin-bottom: 1rem;
   font-size: 1rem;
   font-weight: 600;
+  text-align: center;
 }
 
 .footerSection p {
@@ -347,10 +362,13 @@ body, html, #root {
 
 .footerSection ul {
   list-style: none;
+  margin: 0 auto;
+  padding: 0;
 }
 
 .footerSection ul li {
   margin-bottom: 0.5rem;
+  margin-left: auto;
 }
 
 .footerSection ul li a {

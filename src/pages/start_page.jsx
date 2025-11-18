@@ -14,9 +14,9 @@ const Start_Page = () =>{
               <h2>Temple of Gains</h2>
             </div>
             <nav className="nav">
-              <a href="#features">Features</a>
-              <a href="#journey">Journey</a>
-              <a href="#contact">Contact</a>
+              <a href="#features">Funkcjonalność</a>
+              <a href="#journey">User journey</a>
+              <a href="#contact">Kontakt</a>
             </nav>
             <Link to="/login" className={"loginButton landingButton"}>Zaloguj się!</Link>
           </div>
@@ -25,8 +25,8 @@ const Start_Page = () =>{
         <main className="mainContent">
           <section className="heroSection">
             <div className="heroContent">
-              <h1 className="heroTitle">Welcome to Temple of Gains</h1>
-            <p className="heroDescription">Your ultimate fitness companion.</p>
+              <h1 className="heroTitle">Witamy w Temple of Gains!</h1>
+              <p className="heroDescription">Twój najlepszy towarzysz fitness.</p>
 
               <Link to="/register" className={"registerButton landingButton"}>Zarejestruj się!</Link>
             </div>
@@ -40,79 +40,79 @@ const Start_Page = () =>{
           </section>
 
           <section id="features" className="featuresSection">
-            <h2 className="sectionTitle">Main Features</h2>
+            <h2 className="sectionTitle">Główne funkcje</h2>
         <div className="featuresGrid">
           <div className="featureCard">
             <div className="featureIcon">📊</div>
-            <h3>Workout Tracking</h3>
+            <h3>Śledzenie treningów</h3>
             <p>
-              Log every session with detailed metrics, weights, and performance data for comprehensive training history.
+              Zapisuj każdą sesję ze szczegółami: ilością powtórzeń, podniesionym ciężarem, ilością serii, aby uzyskać kompleksową historię i&nbsp;analizę treningów.
             </p>
           </div>
           <div className="featureCard">
             <div className="featureIcon">💪</div>
-            <h3>Progress Analysis</h3>
-            <p>Visual representation of your training gains. Track strength improvements and body metrics over time.</p>
+            <h3>Analiza postępów</h3>
+            <p>Wizualna reprezentacja Twoich postępów treningowych na wykresach. Śledź poprawę siły i&nbsp;pomiarów ciała w czasie.</p>
           </div>
           <div className="featureCard">
             <div className="featureIcon">🎯</div>
-            <h3>Smart Workouts</h3>
-            <p>AI-powered exercise recommendations tailored to your goals, fitness level, and available equipment.</p>
+            <h3>Spersonalizowane treningi</h3>
+            <p>Rekomendacje ćwiczeń dostosowanych do Twoich celów, poziomu sprawności i&nbsp;dostępnego sprzętu. Gotowe plany treningowe.</p>
           </div>
         </div>
           </section>
 
           {/* User Journey Section */}
       <section className="journey" id="journey">
-        <h2 className="sectionTitle">Your Journey</h2>
+        <h2 className="sectionTitle">Jak działamy?</h2>
         <div className="journeySteps">
           <div className="journeyItem">
             <div className="journeyStep">1</div>
-            <h4>Create Account</h4>
-            <p>Easy registration process with your email</p>
+            <h4>Utwórz konto</h4>
+            <p>Łatwy proces rejestracji za pomocą e-mail.</p>
           </div>
           <div className="journeyItem">
             <div className="journeyStep">2</div>
-            <h4>Set Goals</h4>
-            <p>Define your fitness objectives</p>
+            <h4>Wpisz aktualne pomiary</h4>
+            <p>Zdefiniuj swoje cele fitness, ustaw pomiary ciała.</p>
           </div>
           <div className="journeyItem">
             <div className="journeyStep">3</div>
-            <h4>Start Training</h4>
-            <p>Choose workouts and begin logging</p>
+            <h4>Rozpocznij trening</h4>
+            <p>Wybierz plan treningowy i&nbsp;rozpocznij ćwiczenia.</p>
           </div>
           <div className="journeyItem">
             <div className="journeyStep">4</div>
-            <h4>Track Progress</h4>
-            <p>Monitor improvements with analytics</p>
+            <h4>Śledź postępy</h4>
+            <p>Monitoruj postępy za pomocą analiz w&nbsp;postaci wykresów.</p>
           </div>
           <div className="journeyItem">
             <div className="journeyStep">5</div>
-            <h4>Achieve Goals</h4>
-            <p>Reach new fitness milestones</p>
+            <h4>Osiągnij cele</h4>
+            <p>Osiągaj nowe kamienie milowe.</p>
           </div>
         </div>
       </section>
 
       {/* Next Steps Section */}
       <section className="nextSteps">
-        <h2 className="sectionTitle">Next Steps</h2>
+        <h2 className="sectionTitle">Następne kroki</h2>
         <div className="stepsGrid">
           <div className="stepCard">
-            <h4>Create an Account</h4>
-            <p>Quick registration process. Ready in seconds.</p>
+            <h4>Utwórz konto</h4>
+            <p>Szybki proces rejestracji. Gotowe w kilka sekund.</p>
           </div>
           <div className="stepCard">
-            <h4>Log Your First Workout</h4>
-            <p>Choose your exercise type and track performance.</p>
+            <h4>Zarejestruj pierwszy trening</h4>
+            <p>Wybierz plan treningowy i&nbsp;śledź wyniki.</p>
           </div>
           <div className="stepCard">
-            <h4>View Your Analytics</h4>
-            <p>See detailed insights and training patterns.</p>
+            <h4>Przeglądaj analizy</h4>
+            <p>Sprawdź szczegółowe informacje na temat treningu i&nbsp;postępów.</p>
           </div>
           <div className="stepCard">
-            <h4>Share Achievements</h4>
-            <p>Connect with the community and celebrate wins.</p>
+            <h4>Skorzystaj z bazy ćwiczeń</h4>
+            <p>Skorzystaj z gotowej bazy ćwiczeń i&nbsp;planów treningowych.</p>
           </div>
         </div>
           </section>
@@ -121,11 +121,11 @@ const Start_Page = () =>{
 
       {/* Contact Section */}
       <section className="contact" id="contact">
-        <h2>Get in Touch</h2>
-        <p>Have questions? We're here to help with your fitness journey.</p>
+        <h2>Pozostańmy w kontakcie!</h2>
+        <p>Masz pytania? Jesteśmy tutaj, aby pomóc Ci w Twojej treningowej drodze ku lepszej sylwetce.</p>
         <div className="contactInfo">
-          <a href="tel:+1234567890">📞 +1 (234) 567-890</a>
-          <a href="mailto:support@trainflow.com">📧 support@trainflow.com</a>
+          <a href="tel:+48666666666">📞 +48 666-666-666</a>
+          <a href="mailto:support@templeofgains.com">📧 support@templeofgains.com</a>
         </div>
       </section>
 
@@ -133,27 +133,27 @@ const Start_Page = () =>{
       <footer className="footer">
         <div className="footerContent">
           <div className="footerSection">
-            <h5>TrainFlow</h5>
-            <p>Your ultimate fitness training companion.</p>
+            <h5>Temple of Gains</h5>
+            <p>Twój niezawodny towarzysz treningowy.</p>
           </div>
           <div className="footerSection">
-            <h5>Quick Links</h5>
+            <h5>Szybkie linki</h5>
             <ul>
               <li>
-                <a href="#features">Features</a>
+                <a href="#features">Funkcje</a>
               </li>
               <li>
-                <a href="#journey">Journey</a>
+                <a href="#journey">Jak działamy?</a>
               </li>
               <li>
-                <a href="#contact">Contact</a>
+                <a href="#contact">Kontakt</a>
               </li>
             </ul>
           </div>
          
         </div>
         <div className="footerBottom">
-          <p>&copy; 2025 Temple of Gains. All rights reserved.</p>
+          <p>&copy; 2025 Temple of Gains. Wszelkie prawa zastrzeżone.</p>
         </div>
       </footer>
 
