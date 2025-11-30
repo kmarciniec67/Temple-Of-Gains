@@ -2,10 +2,15 @@ import React from "react";
 import '../App.css';
 import { NavLink } from "react-router-dom";
 import { Link } from "react-router-dom";
-
+import * as AiIcons from "react-icons/ai"
 import photo from '../assets/fitness-training-dashboard.jpg';
+import { useTheme } from "../context/ThemeContext";
+
 
 const Start_Page = () =>{
+
+    const { isDark, toggle } = useTheme();
+
     return(
       <div className="landingPageContainer">
         <header className="header">
@@ -18,7 +23,17 @@ const Start_Page = () =>{
               <a href="#journey">User journey</a>
               <a href="#contact">Kontakt</a>
             </nav>
+            <div className="headerActions">
             <Link to="/login" className={"loginButton landingButton"}>Zaloguj się!</Link>
+            <button className={"toggleThemeButton"}
+                  aria-label="Toggle theme"
+                  onClick={toggle}
+                  aria-pressed={isDark}
+                  title={isDark ? "Przełącz na jasny" : "Przełącz na ciemny"}
+                  >
+                  {isDark ? <AiIcons.AiOutlineMoon /> : <AiIcons.AiOutlineSun />}
+              </button>
+              </div>
           </div>
         </header>
 

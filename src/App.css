@@ -11,15 +11,16 @@ body, html, #root {
 
 .landingPageContainer {
   text-align: center;
-  background-color: #1e1e2f;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   height: 100%;
   width: 100%;
   overflow-x: hidden;
 }
 
 .landingButton {
-  background-color: #2563eb;
-  color: white;
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 8px;
@@ -34,13 +35,13 @@ body, html, #root {
 
 .landingButton:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 12px 24px var(--border-subtle);
 }
 
 /* Header */
 .header {
-  background-color: #0f1729;
-  color: white;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   border-bottom: 1px solid rgba(37, 99, 235, 0.2);
   position: sticky;
   top: 0;
@@ -82,14 +83,36 @@ body, html, #root {
 }
 
 .nav a {
-  color: #e5e7eb;
+  color: var(--link-color);
   text-decoration: none;
   font-size: 0.95rem;
   transition: color 0.3s ease;
 }
 
 .nav a:hover {
-  color: #2563eb;
+  color: var(--link-hover);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1.5vw, 1.5rem);
+}
+
+.toggleThemeButton{
+  cursor: pointer;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  min-height: 40px;
+  min-width: 40px;
+  border-color: var(--text-primary);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.toggleThemeButton:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px var(--border-subtle);
 }
 
 /* Hero Section */
@@ -112,12 +135,12 @@ body, html, #root {
   font-weight: 800;
   margin-bottom: 1.5rem;
   line-height: 1.2;
-  color: #f9fafb;
+  color: var(--text-primary);
 }
 
 .heroDescription {
   font-size: 1.125rem;
-  color: #d1d5db;
+  color: var(--text-secondary);
   margin-bottom: 2rem;
   max-width: 500px;
   line-height: 1.8;
@@ -145,7 +168,8 @@ body, html, #root {
 
 /* Features Section */
 .features {
-  background-color: #1a2847;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
   padding: 5rem 2rem;
 }
 
@@ -159,7 +183,7 @@ body, html, #root {
   font-weight: 700;
   text-align: center;
   margin-bottom: 4rem;
-  color: #f9fafb;
+  color: var(--text-primary);
 }
 
 .featuresGrid {
@@ -169,7 +193,7 @@ body, html, #root {
 }
 
 .featureCard {
-  background-color: #2563eb;
+  background-color: var(--btn-primary-bg);
   padding: 2rem;
   border-radius: 12px;
   transition: all 0.3s ease;
@@ -178,7 +202,7 @@ body, html, #root {
 
 .featureCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 12px 24px var(--border-subtle);
 }
 
 .featureIcon {
@@ -189,11 +213,11 @@ body, html, #root {
 .featureCard h3 {
   font-size: 1.25rem;
   margin-bottom: 0.75rem;
-  color: #f9fafb;
+  color: var(--text-inverse);
 }
 
 .featureCard p {
-  color: #e0e7ff;
+  color: var(--text-card);
   font-size: 0.95rem;
   line-height: 1.6;
 }
@@ -220,8 +244,8 @@ body, html, #root {
 .journeyStep {
   width: 50px;
   height: 50px;
-  background-color: #2563eb;
-  color: white;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -234,17 +258,17 @@ body, html, #root {
 .journeyItem h4 {
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
-  color: #f9fafb;
+  color: var(--text-primary);
 }
 
 .journeyItem p {
   font-size: 0.9rem;
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 /* Next Steps Section */
 .nextSteps {
-  background-color: #1a2847;
+  background-color: var(--bg-tertiary);
   padding: 5rem 2rem;
 }
 
@@ -260,8 +284,8 @@ body, html, #root {
 }
 
 .stepCard {
-  background-color: #f5f5f5;
-  color: #0f1729;
+  background-color: var(--text-primary);
+  color: var(--bg-secondary);
   padding: 2rem;
   border-radius: 12px;
   transition: all 0.3s ease;
@@ -269,7 +293,7 @@ body, html, #root {
 
 .stepCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 8px 16px var(--border-subtle);
 }
 
 .stepCard h4 {
@@ -280,7 +304,7 @@ body, html, #root {
 
 .stepCard p {
   font-size: 0.9rem;
-  color: #6b7280;
+  color: var(--text-card);
 }
 
 /* Contact Section */
@@ -295,12 +319,12 @@ body, html, #root {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 1rem;
-  color: #f9fafb;
+  color: var(--text-primary);
 }
 
 .contact p {
   font-size: 1.125rem;
-  color: #d1d5db;
+  color: var(--text-secondary);
   margin-bottom: 2rem;
 }
 
@@ -312,7 +336,7 @@ body, html, #root {
 }
 
 .contactInfo a {
-  color: #2563eb;
+  color: var(--bg-card);
   text-decoration: none;
   font-size: 1rem;
   font-weight: 600;
@@ -320,14 +344,14 @@ body, html, #root {
 }
 
 .contactInfo a:hover {
-  color: #60a5fa;
+  color: var(--link-hover);
 }
 
 /* Footer */
 .footer {
-  background-color: #1a2847;
+  background-color: var(--bg-tertiary);
   padding: 3rem 2rem 1rem;
-  border-top: 1px solid rgba(37, 99, 235, 0.2);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .footerContent {
@@ -347,7 +371,7 @@ body, html, #root {
 }
 
 .footerSection h5 {
-  color: #f9fafb;
+  color: var(--text-primary);
   margin-bottom: 1rem;
   font-size: 1rem;
   font-weight: 600;
@@ -355,7 +379,7 @@ body, html, #root {
 }
 
 .footerSection p {
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 0.9rem;
   line-height: 1.6;
 }
@@ -372,23 +396,23 @@ body, html, #root {
 }
 
 .footerSection ul li a {
-  color: #9ca3af;
+  color: var(--text-muted);
   text-decoration: none;
   font-size: 0.9rem;
   transition: color 0.3s ease;
 }
 
 .footerSection ul li a:hover {
-  color: #2563eb;
+  color: var(--link-hover);
 }
 
 .footerBottom {
   max-width: 1200px;
   margin: 0 auto;
   padding-top: 2rem;
-  border-top: 1px solid rgba(37, 99, 235, 0.2);
+  border-top: 1px solid var(--border-subtle);
   text-align: center;
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
@@ -408,7 +432,7 @@ body, html, #root {
   }
 
   .heroSection {
-    flex-direction: column;         /* 🔹 zdjęcie pod treścią */
+    flex-direction: column;  
     text-align: center;
     gap: 2rem;
     padding: 3rem 1.5rem;
@@ -609,3 +633,73 @@ body, html, #root {
 }
 
 
+/* DARK THEME – dopasowane do Twojego obecnego wyglądu */
+:root[data-theme="dark"] {
+  /* tła */
+  --bg-primary: #1e1e2f;   /* główne tło strony (landing, login) */
+  --bg-secondary: #0f1729; /* header, navbar */
+  --bg-tertiary: #1a2847;  /* sekcje typu .features, .nextSteps, .footer */
+  --bg-card: #2563eb;      /* featureCard, journeyStep */
+  --bg-card-neutral: #252525; /* neutralne karty, np. stepCard w dark mode */
+
+  /* tekst */
+  --text-primary: #f9fafb;   /* nagłówki, główny tekst na ciemnym tle */
+  --text-secondary: #d1d5db; /* opisy, heroDescription, contact p */
+  --text-muted: #9ca3af;     /* małe opisy, footer tekst */
+  --text-inverse: #0f1729;   /* tekst na jasnych kartach w dark mode */
+
+  /* przyciski i linki */
+  --btn-primary-bg: #2563eb;
+  --btn-primary-text: #ffffff;
+
+  --link-color: #ffffff;
+  --link-hover: #60a5fa;
+
+  /* obramowania / cienie */
+  --border-subtle: rgba(37, 99, 235, 0.2);
+}
+
+/* LIGHT THEME – jaśniejsza wersja */
+:root[data-theme="light"] {
+  /* tła */
+  --bg-primary: #f5f5f5;    /* główne tło */
+  --bg-secondary: #ffffff;  /* header */
+  --bg-tertiary: #e5ecff;   /* sekcje “płytsze” zamiast granatowych */
+  --bg-card: #2563eb;       /* akcentowe karty mogą zostać niebieskie */
+  --bg-card-neutral: #ffffff; /* neutralne karty, np. stepCard */
+
+  /* tekst */
+  --text-primary: #111827;   /* główny ciemny tekst */
+  --text-secondary: #052944; /* opisy, jasny tekst */
+  --text-muted: #6b7280;     /* drobne info, footer */
+  --text-inverse: #f9fafb;   /* tekst na niebieskich kartach/przyciskach */
+  --text-card: #cfe2e2;
+
+  /* przyciski i linki */
+  --btn-primary-bg: #081b44;
+  --btn-primary-text: #ffffff;
+
+  --link-color: #081b44;
+  --link-hover: #1d4ed8;
+
+  /* obramowania / cienie */
+  --border-subtle: rgba(4, 9, 22, 0.2);
+}
+
+/* fallback (bez data-theme) możesz zostawić jako light */
+:root {
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e5ecff;
+  --bg-card: #2563eb;
+  --bg-card-neutral: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  --text-inverse: #f9fafb;
+  --btn-primary-bg: #2563eb;
+  --btn-primary-text: #ffffff;
+  --link-color: #2563eb;
+  --link-hover: #1d4ed8;
+  --border-subtle: rgba(15, 23, 42, 0.08);
+}
