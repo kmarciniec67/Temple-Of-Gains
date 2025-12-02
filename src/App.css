@@ -304,7 +304,7 @@ body, html, #root {
 
 .stepCard p {
   font-size: 0.9rem;
-  color: var(--text-card);
+  color: var(--text-inverse);
 }
 
 /* Contact Section */
@@ -337,6 +337,7 @@ body, html, #root {
 
 .contactInfo a {
   color: var(--bg-card);
+  color: var(--text-primary);
   text-decoration: none;
   font-size: 1rem;
   font-weight: 600;
@@ -674,29 +675,39 @@ body, html, #root {
 }
 
 /* dark theme */
+
 :root[data-theme="dark"] {
-  /* bckgs */
-  --bg-primary: #1e1e2f;   /* landing, login */
-  --bg-secondary: #0f1729; /* header, navbar */
-  --bg-tertiary: #1a2847;  /* .features, .nextSteps, .footer */
-  --bg-card: #2563eb;      /* featureCard, journeyStep */
-  --bg-card-neutral: #252525; /* stepCard */
+  /* bgs */
+  --bg-primary: #060816;         /* landing, login  */
+  --bg-secondary: #0b1020;       /* navbar / header */
+  --bg-tertiary: #151a2c;        /* sections */
+  --bg-card: #1d2338;            /* landing / featureCard cards */
+  --bg-card-neutral: #171c2b;    /* neutral cards */
+  --bg-card-dashboard: #171d30;  /* dashboard cards */
 
   /* text */
-  --text-primary: #f9fafb;   /* headers, text on black */
-  --text-secondary: #d1d5db; /* descriptions, heroDescription, contact p */
-  --text-muted: #9ca3af;     /* small descriptions opisy, footer  */
-  --text-inverse: #0f1729;   /* light cards text */
+  --text-primary: #f9fafb;       /* main text */
+  --text-secondary: #c7d2fe;     /* descriptions, subtitles */
+  --text-muted: #9ca3af;         /* minor descriptions */
+  --text-inverse: #020617;       /* text on light buttons */
+  --text-card: #e5e7eb;
 
-  /* btn, links */
-  --btn-primary-bg: #2563eb;
+  /* accents/btns */
+  --accent-color: #4f46e5;       /* icons, underlines */
+  --btn-primary-bg: #4f46e5;     /* main button (e.g. +, login) */
   --btn-primary-text: #ffffff;
 
-  --link-color: #ffffff;
-  --link-hover: #60a5fa;
+  --link-color: #e5e7eb;
+  --link-hover: #a5b4fc;
 
-  /* borders */
-  --border-subtle: rgba(37, 99, 235, 0.2);
+  /* borders/shadows */
+  --border-subtle: rgba(148, 163, 184, 0.35);
+
+  --card-shadow: 0 16px 40px rgba(15, 23, 42, 0.55);
+  --card-shadow-hover: 0 18px 50px rgba(59, 130, 246, 0.45);
+
+  /* hover */
+  --bg-hover: #111827;
 }
 
 /* LIGHT THEME */
@@ -706,6 +717,7 @@ body, html, #root {
   --bg-tertiary: #e5ecff;
   --bg-card: #2563eb;
   --bg-card-neutral: #ffffff;
+  --bg-card-dashboard: #fcfcfc; /* dashboard cards */
 
   --text-primary: #111827;
   --text-secondary: #052944;
@@ -720,6 +732,8 @@ body, html, #root {
   --link-hover: #1d4ed8;
 
   --border-subtle: rgba(4, 9, 22, 0.2);
+
+  --bg-hover: #f3f4f6;
 }
 
 /* fallback (no data-theme) */
@@ -729,13 +743,21 @@ body, html, #root {
   --bg-tertiary: #e5ecff;
   --bg-card: #2563eb;
   --bg-card-neutral: #ffffff;
+  --bg-card-dashboard: #fcfcfc; /* dashboard cards */
+
   --text-primary: #111827;
-  --text-secondary: #4b5563;
-  --text-muted: #6b7280;
+  --text-secondary: #052944;
+  --text-muted: #6b7280; 
   --text-inverse: #f9fafb;
-  --btn-primary-bg: #2563eb;
+  --text-card: #cfe2e2;
+
+  --btn-primary-bg: #081b44;
   --btn-primary-text: #ffffff;
-  --link-color: #2563eb;
+
+  --link-color: #081b44;
   --link-hover: #1d4ed8;
-  --border-subtle: rgba(15, 23, 42, 0.08);
+
+  --border-subtle: rgba(4, 9, 22, 0.2);
+
+  --bg-hover: #f3f4f6;
 }

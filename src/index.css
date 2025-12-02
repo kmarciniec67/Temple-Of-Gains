@@ -16,76 +16,94 @@ code {
     monospace;
 }
 
-/* dark and light theme variables */
-:root[data-theme="dark"] {
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #2d2d2d;
-  --bg-tertiary: #3a3a3a;
-  --bg-hover:#1e1d1d;
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --border-color: #404040;
-  --accent-primary: #24719a;
-  --accent-secondary: #00d4ff;
-  --chart-line: #00d4ff;
-  --input-bg: #252525;
-  --input-border: #404040;
-  --card-bg: #252525;
-  --card-border: #404040;
-}
-
-:root[data-theme="light"] {
-  --bg-primary: #f5f5f5;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f0f0f0;
-  --bg-hover: #e1e1e1;
-  --text-primary: #1a1a1a;
-  --text-secondary: #666666;
-  --border-color: #e0e0e0;
-  --accent-primary: #0084d9;
-  --accent-secondary: #00a8ff;
-  --chart-line: #00b4ff;
-  --input-bg: #ffffff;
-  --input-border: #d0d0d0;
-  --card-bg: #ffffff;
-  --card-border: #e0e0e0;
-}
-
-/* default (fallback) theme variables - keep light as default */
-:root {
-  --bg-primary: #f5f5f5;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f0f0f0;
-  --text-primary: #1a1a1a;
-  --text-secondary: #666666;
-  --border-color: #e0e0e0;
-  --accent-primary: #0084d9;
-  --accent-secondary: #00a8ff;
-  --chart-line: #00b4ff;
-  --input-bg: #ffffff;
-  --input-border: #d0d0d0;
-  --card-bg: #ffffff;
-  --card-border: #e0e0e0;
-}
-
 html, body, #root { height: 100%; }
 /* use primary variables for page background and text */
 body { margin:0; background:var(--bg-primary); color:var(--text-primary); }
 
-/* Pages that should always remain light (override theme variables locally) */
-/* start page wrapper and login/register wrapper */
-.App {
+/* dark theme */
+
+:root[data-theme="dark"] {
+  /* bgs */
+  --bg-primary: #060816;         /* landing, login  */
+  --bg-secondary: #0b1020;       /* navbar / header */
+  --bg-tertiary: #151a2c;        /* sections */
+  --bg-card: #1d2338;            /* landing / featureCard cards */
+  --bg-card-neutral: #171c2b;    /* neutral cards */
+  --bg-card-dashboard: #171d30;  /* dashboard cards */
+
+  /* text */
+  --text-primary: #f9fafb;       /* main text */
+  --text-secondary: #c7d2fe;     /* descriptions, subtitles */
+  --text-muted: #9ca3af;         /* minor descriptions */
+  --text-inverse: #020617;       /* text on light buttons */
+  --text-card: #e5e7eb;
+
+  /* accents/btns */
+  --accent-color: #4f46e5;       /* icons, underlines */
+  --btn-primary-bg: #4f46e5;     /* main button (e.g. +, login) */
+  --btn-primary-text: #ffffff;
+
+  --link-color: #e5e7eb;
+  --link-hover: #a5b4fc;
+
+  /* borders/shadows */
+  --border-subtle: rgba(148, 163, 184, 0.35);
+
+  --card-shadow: 0 16px 40px rgba(15, 23, 42, 0.55);
+  --card-shadow-hover: 0 18px 50px rgba(59, 130, 246, 0.45);
+
+  /* hover */
+  --bg-hover: #111827;
+}
+
+/* LIGHT THEME */
+:root[data-theme="light"] {
   --bg-primary: #f5f5f5;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f0f0f0;
-  --text-primary: #1a1a1a;
-  --text-secondary: #666666;
-  --border-color: #e0e0e0;
-  --accent-primary: #0084d9;
-  --accent-secondary: #00a8ff;
-  --chart-line: #00b4ff;
-  --input-bg: #ffffff;
-  --input-border: #d0d0d0;
-  --card-bg: #ffffff;
-  --card-border: #e0e0e0;
+  --bg-tertiary: #e5ecff;
+  --bg-card: #2563eb;
+  --bg-card-neutral: #ffffff;
+  --bg-card-dashboard: #fcfcfc; /* dashboard cards */
+
+  --text-primary: #111827;
+  --text-secondary: #052944;
+  --text-muted: #6b7280; 
+  --text-inverse: #f9fafb;
+  --text-card: #cfe2e2;
+
+  --btn-primary-bg: #081b44;
+  --btn-primary-text: #ffffff;
+
+  --link-color: #081b44;
+  --link-hover: #1d4ed8;
+
+  --border-subtle: rgba(4, 9, 22, 0.2);
+
+  --bg-hover: #f3f4f6;
+}
+
+/* fallback (no data-theme) */
+:root {
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e5ecff;
+  --bg-card: #2563eb;
+  --bg-card-neutral: #ffffff;
+  --bg-card-dashboard: #fcfcfc; /* dashboard cards */
+
+  --text-primary: #111827;
+  --text-secondary: #052944;
+  --text-muted: #6b7280; 
+  --text-inverse: #f9fafb;
+  --text-card: #cfe2e2;
+
+  --btn-primary-bg: #081b44;
+  --btn-primary-text: #ffffff;
+
+  --link-color: #081b44;
+  --link-hover: #1d4ed8;
+
+  --border-subtle: rgba(4, 9, 22, 0.2);
+
+  --bg-hover: #f3f4f6;
 }
