@@ -3,6 +3,8 @@ import '../App.css';
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
+let test = false;
+
 const Register_Page = () =>{
     const navigate = useNavigate();
 
@@ -15,6 +17,40 @@ const Register_Page = () =>{
 
     const [errors, setErrors] = useState({}); // validate errors
     const [passwordTouched, setPasswordTouched] = useState(false); // hints
+
+    const [usernameTaken, setUsernameTaken] = useState(false); // czy nazwa zajęta
+    const [typingTimer, setTypingTimer] = useState(null); // timer do sprawdzania nazwy
+
+    const checkUsernameAvailability = async (username) => {
+        
+    if (!username || username.length < 3) {
+        setUsernameTaken(false);
+        return;
+    }
+
+    try {
+        const res = await fetch("/api/check-username", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+        });
+
+        if (!res.ok) {
+        const text = await res.text();
+        console.error("Bad response from /api/check-username:", res.status, text);
+        setUsernameTaken(false);
+        setErrors(prev => ({ ...prev, username: "Nazwa użytkownika jest już zajęta." }));
+        return;
+        }
+
+        const data = await res.json();
+        console.log(data);
+        setUsernameTaken(!data.available); // true = zajęta
+    } catch (err) {
+        console.error("Error checking username:", err);
+        setUsernameTaken(false);
+    }
+};
 
     const validateField = (name, value, allValues) => {
         setErrors((prev) => {
@@ -80,6 +116,16 @@ const Register_Page = () =>{
         setValues((prev) => {
             const newValues = { ...prev, [name]: value };
             validateField(name, value, newValues);
+
+            if (name === "username") {
+                if (typingTimer) {
+                    clearTimeout(typingTimer);
+                }
+                const timer = setTimeout(() => {
+                    checkUsernameAvailability(value);
+                }, 500);
+                setTypingTimer(timer);
+            }
             return newValues;
         });
     };
@@ -87,6 +133,10 @@ const Register_Page = () =>{
     const handleBlur = (e) => {
         const { name, value } = e.target;
         validateField(name, value, values);
+
+        if (name === "username") {
+            checkUsernameAvailability(value);
+        }
     };
 
     const validate = () => {
@@ -96,6 +146,10 @@ const Register_Page = () =>{
             tempErrors.username = "Nazwa użytkownika jest wymagana.";
         } else if (values.username.length < 5) {
             tempErrors.username = "Nazwa użytkownika musi mieć co najmniej 5 znaków.";
+        }
+
+        if (usernameTaken) {
+            tempErrors.username = "Nazwa użytkownika jest już zajęta.";
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -195,6 +249,9 @@ const Register_Page = () =>{
                     onChange={handleChange} 
                     onBlur={handleBlur}></input>
                 {errors.username && <span className="error">{errors.username}</span>}
+                {!errors.username && usernameTaken && 
+                    <span className="error">{errors.username}</span>
+                }
                 <label htmlFor ="email">Adres e-mail</label>
                 <input 
                     id="email" 

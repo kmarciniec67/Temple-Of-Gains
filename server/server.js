@@ -165,6 +165,22 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
+// endpoint do sprawdzania nazwy uzytkownika podczas rejestracji
+app.post('/api/check-username', async (req, res) => {
+    
+    console.log(req.body);
+    const [existsUser] = await pool.query(
+      'SELECT id FROM users WHERE username = ?',
+      [req.body.username]
+    );
+
+    if (existsUser.length > 0)  {
+      return res.status(409).json({ error: 'Nazwa użytkownika jest już zajęta.' });
+    }
+
+    return res.status(200).json({info: "Nazwa wolna."})
+});
+
 // Endpoint zwracający pomiary użytkownika
 // POPRAWIONY: Pobiera ID z tokena (req.user.id), a nie z URL
 app.get('/api/measurements', authenticateToken, async (req, res) => {
