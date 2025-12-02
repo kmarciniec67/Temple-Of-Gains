@@ -2,7 +2,7 @@
 
 .dashboardBackground{
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
   width: 100%;
 }
 
@@ -29,8 +29,9 @@
 /* content area inside dashboard; ensure it sits below the fixed navbar */
 .pageContent {
   flex: 1 1 auto;
-  padding-top: calc(var(--navbar-height, 4rem) + 1rem); /* navbar + small gap */
-  padding-left: 1rem;
+  padding-top: calc(var(--navbar-height, 4rem) + 2rem); /* navbar + small gap */
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 /* ensure page content sits above sidebar on wide screens */
@@ -49,5 +50,209 @@
 @media (max-width: 48em) {
   :global(.sidebar-open) .pageContent {
     margin-left: 0;
+    padding-top: calc(var(--navbar-height, 4rem) + 2rem);
+    padding-left: 1rem;
+  }
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.greatingHeader {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.greeting {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+}
+
+.dateBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dataText {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.dataIcon {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+}
+
+.statsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 1.5rem;
+}
+
+.statCard {
+  background-color: var(--bg-card-dashboard);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.statIcon {
+  font-size: 2rem;
+  color: var(--accent-color);
+}
+
+.statLabel {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 1.5rem;
+}
+
+.cardLastTrainingWide {
+  grid-column: span 2;
+}
+
+.card {
+  background-color: var(--bg-card-dashboard);
+  padding: 1rem 1rem 1rem 1rem;
+  border-radius: 0.5rem;
+  box-shadow: var(--card-shadow);
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.chartPlaceholder {
+  min-height: 200px;
+  background-color: var(--bg-secondary);
+  border-radius: 0.5rem;
+  border: 1px dashed var(--border-color);
+  justify-content: center;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  background-color: var(--bg-secondary);
+}
+
+.table th,
+.table td {
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+}
+
+.fabContainer {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  z-index: 1000;
+}
+
+.fabMainButton {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  cursor: pointer;
+  box-shadow: var(--card-shadow)
+}
+
+.fabActions {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-radius: 10px;
+  padding: 0.5rem 0.9rem;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(8px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.fabContainer:hover .fabActions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.fabActionButton {
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 0.85rem;
+  padding: 0.25rem 0;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.fabActionButton:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .statsRow {
+    grid-template-columns: 1fr;
+  }
+
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pageContent {
+    padding: 1.5rem;
+  }
+
+  .fabContainer {
+    right: 1.2rem;
+    bottom: 1.2rem;
   }
 }
