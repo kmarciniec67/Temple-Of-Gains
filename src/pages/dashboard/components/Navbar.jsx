@@ -33,7 +33,7 @@ function NavBar() {
         try {
             await fetch('/api/logout', {
                 method: 'POST',
-                credentials: 'include', // <<< WAŻNE, aby wysłać cookie
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 }
@@ -41,7 +41,6 @@ function NavBar() {
         } catch (err) {
             console.error("Błąd podczas wylogowywania:", err);
         } finally {
-            // Niezależnie od błędu, czyścimy front i przekierowujemy
             localStorage.removeItem('user');
             navigate('/login');
         }
