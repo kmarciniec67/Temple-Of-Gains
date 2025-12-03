@@ -1,0 +1,25 @@
+.PlansBackground {
+    display: flex;
+    width: 100%;
+}
+
+.PlansContainer {
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.planCard {
+    background-color: var(--bg-card-dashboard);
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+    color: var(--text-primary);
+    transition: transform 0.2s;
+}
+
+.planCard:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--card-shadow-hover);
+}

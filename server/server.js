@@ -204,23 +204,188 @@ app.get('/api/measurements', authenticateToken, async (req, res) => {
     }
 });
 
-// -- endpoints --
 // Endpoint zwracający plany treningowe użytkownika
 app.get('/api/plans', authenticateToken, async (req, res) => {
     const userId = req.user.id;
     try {
-        const [rows] = await pool.query(
-            'SELECT * FROM workoutplans WHERE user_id = ?',
-            [userId]
-        );
-        res.json(rows);
+        // Zapytanie łączące plany (workoutplans) z ćwiczeniami (exercises) poprzez tabelę łączącą (planexercises)
+        const query = `
+            SELECT wp.id as plan_id, wp.name as plan_name, wp.description as plan_desc,
+                   e.id as exercise_id, e.name as exercise_name, e.body_part
+            FROM workoutplans wp
+            LEFT JOIN planexercises pe ON wp.id = pe.plan_id
+            LEFT JOIN exercises e ON pe.exercise_id = e.id
+            WHERE wp.user_id = ?
+            ORDER BY wp.id DESC, pe.order_index ASC
+        `;
+
+        const [rows] = await pool.query(query, [userId]);
+
+        // Grupujemy płaskie wyniki z bazy danych w obiekty planów zawierające tablice ćwiczeń
+        const plansMap = new Map();
+
+        rows.forEach(row => {
+            if (!plansMap.has(row.plan_id)) {
+                plansMap.set(row.plan_id, {
+                    id: row.plan_id,
+                    name: row.plan_name,
+                    description: row.plan_desc,
+                    exercises: [] // Pusta tablica na start
+                });
+            }
+
+            if (row.exercise_id) { // Jeśli plan ma przypisane ćwiczenie, dodajemy je do listy
+                plansMap.get(row.plan_id).exercises.push({
+                    id: row.exercise_id,
+                    name: row.exercise_name,
+                    body_part: row.body_part
+                });
+            }
+        });
+
+        // Zamieniamy mapę z powrotem na tablicę, którą wyślemy do frontendu
+        const result = Array.from(plansMap.values());
+        res.json(result);
+
     } catch (err) {
-        console.error(err);
+        console.error("Błąd pobierania planów:", err);
         res.status(500).json({ error: 'Database error' });
     }
 });
+// Endpoint do tworzenia planow
+app.post('/api/plans', authenticateToken, async (req, res) => {
+    const { name, description, exercises } = req.body;
+    const userId = req.user.id;
 
-// Endpoint zwracający bazę wszystkich ćwiczeń (publiczny, ale chroniony)
+    // Walidacja
+    if (!name) {
+        return res.status(400).json({ error: 'Nazwa planu jest wymagana.' });
+    }
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // 1. Utwórz plan
+        const [planResult] = await connection.query(
+            'INSERT INTO workoutplans (user_id, name, description) VALUES (?, ?, ?)',
+            [userId, name, description]
+        );
+        const planId = planResult.insertId;
+
+        // 2. Jeśli wybrano ćwiczenia, przypisz je do planu
+        if (exercises && Array.isArray(exercises) && exercises.length > 0) {
+            const values = exercises.map((exId, index) => [planId, exId, index + 1]);
+            await connection.query(
+                'INSERT INTO planexercises (plan_id, exercise_id, order_index) VALUES ?',
+                [values]
+            );
+        }
+
+        await connection.commit();
+        res.status(201).json({ success: true, id: planId, message: 'Plan został utworzony.' });
+
+    } catch (err) {
+        await connection.rollback();
+        console.error('Create Plan Error:', err);
+        res.status(500).json({ error: 'Błąd podczas tworzenia planu.' });
+    } finally {
+        connection.release();
+    }
+});
+// Endpoint do usuwania planów (DELETE)
+app.delete('/api/plans/:id', authenticateToken, async (req, res) => {
+    const planId = req.params.id;
+    const userId = req.user.id;
+
+    try {
+        // Sprawdź, czy plan należy do użytkownika
+        const [result] = await pool.query(
+            'DELETE FROM workoutplans WHERE id = ? AND user_id = ?',
+            [planId, userId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Plan nie istnieje lub brak uprawnień.' });
+        }
+
+        res.json({ success: true, message: 'Plan usunięty.' });
+    } catch (err) {
+        console.error('Delete Plan Error:', err);
+        res.status(500).json({ error: 'Błąd bazy danych.' });
+    }
+});
+
+// Endpoint do edycji planow (PUT)
+app.put('/api/plans/:id', authenticateToken, async (req, res) => {
+    const planId = req.params.id;
+    const userId = req.user.id;
+    const { name, description, exercises } = req.body; // exercises = tablica ID wybranych ćwiczeń
+
+    if (!name) return res.status(400).json({ error: 'Nazwa jest wymagana.' });
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // 1. Aktualizacja nazwy i opisu planu
+        const [updateResult] = await connection.query(
+            'UPDATE workoutplans SET name = ?, description = ? WHERE id = ? AND user_id = ?',
+            [name, description, planId, userId]
+        );
+
+        if (updateResult.affectedRows === 0) {
+            await connection.rollback();
+            return res.status(404).json({ error: 'Plan nie istnieje lub brak uprawnień.' });
+        }
+
+        // 2. Aktualizacja ćwiczeń
+        await connection.query('DELETE FROM planexercises WHERE plan_id = ?', [planId]);
+
+        // 3. Dodaj nowe ćwiczenia, jeśli jakieś zaznaczono
+        if (exercises && Array.isArray(exercises) && exercises.length > 0) {
+            const values = exercises.map((exId, index) => [planId, exId, index + 1]);
+            await connection.query(
+                'INSERT INTO planexercises (plan_id, exercise_id, order_index) VALUES ?',
+                [values]
+            );
+        }
+
+        await connection.commit();
+        res.json({ success: true, message: 'Plan zaktualizowany.' });
+
+    } catch (err) {
+        await connection.rollback();
+        console.error('Update Plan Error:', err);
+        res.status(500).json({ error: 'Błąd podczas edycji planu.' });
+    } finally {
+        connection.release();
+    }
+});
+
+
+// Endpoint dodający nowe ćwiczenie do bazy
+app.post('/api/exercises', authenticateToken, async (req, res) => {
+    const { name, description, body_part, video_url } = req.body;
+
+    // Walidacja
+    if (!name || !body_part) {
+        return res.status(400).json({ error: 'Nazwa i partia mięśniowa są wymagane.' });
+    }
+
+    try {
+        const [result] = await pool.query(
+            'INSERT INTO exercises (name, description, body_part, video_url) VALUES (?, ?, ?, ?)',
+            [name, description, body_part, video_url]
+        );
+        res.status(201).json({ success: true, id: result.insertId, message: 'Dodano ćwiczenie.' });
+    } catch (err) {
+        console.error('Add Exercise Error:', err);
+        res.status(500).json({ error: 'Błąd bazy danych.' });
+    }
+});
+
+// Endpoint zwracający bazę wszystkich ćwiczeń
 app.get('/api/exercises', authenticateToken, async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM exercises ORDER BY body_part, name');
@@ -228,6 +393,72 @@ app.get('/api/exercises', authenticateToken, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// Endpoint dodający nowe ćwiczenia
+app.post('/api/exercises', authenticateToken, async (req, res) => {
+    const { name, description, body_part, video_url } = req.body;
+
+    // Walidacja
+    if (!name || !body_part) {
+        return res.status(400).json({ error: 'Nazwa i partia mięśniowa są wymagane.' });
+    }
+
+    try {
+        const [result] = await pool.query(
+            'INSERT INTO exercises (name, description, body_part, video_url) VALUES (?, ?, ?, ?)',
+            [name, description, body_part, video_url]
+        );
+        res.status(201).json({ success: true, id: result.insertId, message: 'Dodano ćwiczenie.' });
+    } catch (err) {
+        console.error('Add Exercise Error:', err);
+        res.status(500).json({ error: 'Błąd bazy danych.' });
+    }
+});
+// Endpoint usuwanie ćwiczen (DELETE)
+app.delete('/api/exercises/:id', authenticateToken, async (req, res) => {
+    const exerciseId = req.params.id;
+
+    try {
+        // Uwaga: Baza danych jest skonfigurowana z "ON DELETE CASCADE" dla planów i historii,
+        // więc usunięcie ćwiczenia usunie je również z wszystkich planów treningowych!
+        const [result] = await pool.query('DELETE FROM exercises WHERE id = ?', [exerciseId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Ćwiczenie nie istnieje.' });
+        }
+
+        res.json({ success: true, message: 'Ćwiczenie usunięte.' });
+    } catch (err) {
+        console.error('Delete Exercise Error:', err);
+        res.status(500).json({ error: 'Błąd bazy danych.' });
+    }
+});
+
+// Endpoint pozwalajacy edytowac cwiczenia
+app.put('/api/exercises/:id', authenticateToken, async (req, res) => {
+    const exerciseId = req.params.id;
+    const { name, description, body_part, video_url } = req.body;
+
+    if (!name || !body_part) {
+        return res.status(400).json({ error: 'Nazwa i partia mięśniowa są wymagane.' });
+    }
+
+    try {
+        const [result] = await pool.query(
+            'UPDATE exercises SET name = ?, description = ?, body_part = ?, video_url = ? WHERE id = ?',
+            [name, description, body_part, video_url, exerciseId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Ćwiczenie nie istnieje.' });
+        }
+
+        res.json({ success: true, message: 'Ćwiczenie zaktualizowane.' });
+    } catch (err) {
+        console.error('Update Exercise Error:', err);
+        res.status(500).json({ error: 'Błąd bazy danych.' });
     }
 });
 // Endpoint zwracający historię treningów użytkownika
@@ -267,6 +498,8 @@ app.post('/api/logout', (req, res) => {
     res.clearCookie('token', { httpOnly: true, sameSite: 'strict' });
     res.json({ success: true, message: "Wylogowano" });
 });
+
+
 
 // załadowanie strony z pliku (obsługa routingu Reacta)
 app.use((req, res) => {
