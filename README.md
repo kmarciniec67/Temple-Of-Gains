@@ -87,6 +87,36 @@ node server/server.js
 | [@kmarciniec67](https://github.com/kmarciniec67) | |
 | [@knocek](https://github.com/knocek) | |
 
+
+### Info
+Użyto prettiera przed każdym commitem.
+Aby działał w projekcie należy postępować krok po kroku:
+1. Zainstaluj zależności w katalogu głównym
+```bash
+npm i -D prettier husky lint-staged
+npx husky init
+```
+2. Dodaj skrypty i konfigurację lint-sraged do package.json
+```bash
+{
+  "scripts": {
+    "prepare": "husky install",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx,json,css,scss,md,html}": "prettier --write"
+  }
+}
+```
+3. Dodaj hook pre-commit
+Utwórz plik .husky/pre-commit i wklej zawartość:
+```bash
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+npx lint-staged
+```
 ---
 
 ## Licencja

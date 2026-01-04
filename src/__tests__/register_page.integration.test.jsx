@@ -19,7 +19,7 @@ function renderRegister() {
   return render(
     <MemoryRouter initialEntries={["/register"]}>
       <Register_Page />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -103,58 +103,66 @@ describe("Register_Page - testy integracyjne", () => {
       "/api/check-username",
       expect.objectContaining({
         method: "POST",
-        headers: expect.objectContaining({ "Content-Type": "application/json" }),
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+        }),
         body: JSON.stringify({ username: "abcde" }),
-      })
+      }),
     );
   });
 
   it("check-username 409: ustawia błąd 'Nazwa użytkownika jest już zajęta.'", async () => {
-  vi.useFakeTimers();
+    vi.useFakeTimers();
 
-  globalThis.fetch = vi.fn(async (url) => {
-    if (url === "/api/check-username") {
-      return {
-        ok: false,
-        status: 409,
-        json: async () => ({ error: "Nazwa użytkownika jest już zajęta." }),
-      };
-    }
-    return { ok: false, status: 404, json: async () => ({}) };
+    globalThis.fetch = vi.fn(async (url) => {
+      if (url === "/api/check-username") {
+        return {
+          ok: false,
+          status: 409,
+          json: async () => ({ error: "Nazwa użytkownika jest już zajęta." }),
+        };
+      }
+      return { ok: false, status: 404, json: async () => ({}) };
+    });
+
+    renderRegister();
+
+    const usernameInput = screen.getByLabelText(/nazwa użytkownika/i);
+
+    fireEvent.change(usernameInput, {
+      target: { name: "username", value: "abcde" }, // 5+ znaków
+    });
+
+    // debounce 500ms - ważne: w act
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
+
+    await flushPromises();
+
+    // sprawdza, czy fetch był wywołany
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "/api/check-username",
+      expect.objectContaining({ method: "POST" }),
+    );
+
+    // i czy błąd jest wyświetlony
+    expect(
+      screen.getByText(/nazwa użytkownika jest już zajęta/i),
+    ).toBeInTheDocument();
   });
-
-  renderRegister();
-
-  const usernameInput = screen.getByLabelText(/nazwa użytkownika/i);
-
-  fireEvent.change(usernameInput, {
-    target: { name: "username", value: "abcde" }, // 5+ znaków
-  });
-
-  // debounce 500ms - ważne: w act
-  await act(async () => {
-    await vi.advanceTimersByTimeAsync(500);
-  });
-
-  await flushPromises();
-
-  // sprawdza, czy fetch był wywołany
-  expect(globalThis.fetch).toHaveBeenCalledTimes(1);
-  expect(globalThis.fetch).toHaveBeenCalledWith(
-    "/api/check-username",
-    expect.objectContaining({ method: "POST" })
-  );
-
-  // i czy błąd jest wyświetlony
-  expect(screen.getByText(/nazwa użytkownika jest już zajęta/i)).toBeInTheDocument();
-});
 
   it("register 201 + {success:true}: nawiguje do /dashboard (bez zapisu user w localStorage)", async () => {
     const user = userEvent.setup();
 
     globalThis.fetch = vi.fn(async (url) => {
       if (url === "/api/check-username") {
-        return { ok: true, status: 200, json: async () => ({ info: "Nazwa wolna." }) };
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ info: "Nazwa wolna." }),
+        };
       }
       if (url === "/api/register") {
         return { ok: true, status: 201, json: async () => ({ success: true }) };
@@ -164,17 +172,23 @@ describe("Register_Page - testy integracyjne", () => {
 
     renderRegister();
 
-    await user.type(screen.getByLabelText(/nazwa użytkownika/i), valid.username);
+    await user.type(
+      screen.getByLabelText(/nazwa użytkownika/i),
+      valid.username,
+    );
     await user.type(screen.getByLabelText(/adres e-mail/i), valid.email);
     await user.type(screen.getByLabelText(/^hasło$/i), valid.password);
-    await user.type(screen.getByLabelText(/potwierdź hasło/i), valid.confirmPassword);
+    await user.type(
+      screen.getByLabelText(/potwierdź hasło/i),
+      valid.confirmPassword,
+    );
 
     await user.click(screen.getByRole("button", { name: /zarejestruj się!/i }));
     await flushPromises();
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
       "/api/register",
-      expect.objectContaining({ method: "POST" })
+      expect.objectContaining({ method: "POST" }),
     );
 
     expect(localStorage.getItem("user")).toBeNull();
@@ -186,13 +200,19 @@ describe("Register_Page - testy integracyjne", () => {
 
     globalThis.fetch = vi.fn(async (url) => {
       if (url === "/api/check-username") {
-        return { ok: true, status: 200, json: async () => ({ info: "Nazwa wolna." }) };
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ info: "Nazwa wolna." }),
+        };
       }
       if (url === "/api/register") {
         return {
           ok: false,
           status: 409,
-          json: async () => ({ error: "E-mail jest już użyty przez innego użytkownika." }),
+          json: async () => ({
+            error: "E-mail jest już użyty przez innego użytkownika.",
+          }),
         };
       }
       return { ok: false, status: 404, json: async () => ({}) };
@@ -200,10 +220,16 @@ describe("Register_Page - testy integracyjne", () => {
 
     renderRegister();
 
-    await user.type(screen.getByLabelText(/nazwa użytkownika/i), valid.username);
+    await user.type(
+      screen.getByLabelText(/nazwa użytkownika/i),
+      valid.username,
+    );
     await user.type(screen.getByLabelText(/adres e-mail/i), valid.email);
     await user.type(screen.getByLabelText(/^hasło$/i), valid.password);
-    await user.type(screen.getByLabelText(/potwierdź hasło/i), valid.confirmPassword);
+    await user.type(
+      screen.getByLabelText(/potwierdź hasło/i),
+      valid.confirmPassword,
+    );
 
     await user.click(screen.getByRole("button", { name: /zarejestruj się!/i }));
     await flushPromises();
@@ -220,7 +246,11 @@ describe("Register_Page - testy integracyjne", () => {
 
     globalThis.fetch = vi.fn(async (url) => {
       if (url === "/api/check-username") {
-        return { ok: true, status: 200, json: async () => ({ info: "Nazwa wolna." }) };
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ info: "Nazwa wolna." }),
+        };
       }
       if (url === "/api/register") {
         throw new Error("Network error");
@@ -230,10 +260,16 @@ describe("Register_Page - testy integracyjne", () => {
 
     renderRegister();
 
-    await user.type(screen.getByLabelText(/nazwa użytkownika/i), valid.username);
+    await user.type(
+      screen.getByLabelText(/nazwa użytkownika/i),
+      valid.username,
+    );
     await user.type(screen.getByLabelText(/adres e-mail/i), valid.email);
     await user.type(screen.getByLabelText(/^hasło$/i), valid.password);
-    await user.type(screen.getByLabelText(/potwierdź hasło/i), valid.confirmPassword);
+    await user.type(
+      screen.getByLabelText(/potwierdź hasło/i),
+      valid.confirmPassword,
+    );
 
     await user.click(screen.getByRole("button", { name: /zarejestruj się!/i }));
     await flushPromises();
