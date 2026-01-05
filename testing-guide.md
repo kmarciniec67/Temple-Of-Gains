@@ -53,18 +53,22 @@ Przechodzimy do pisania własnych testów. Testy jakie zostały przeprowadzone z
 ### 2. Testy wydajności
 **Rejestracja - dodawanie użytkowników do bazy danych**
 
-Test próbuje zarejestrować 20 użytkowników w czasie 20 sekund.
-Do testów wydajności utworzyć należy kopię bazy danych i dać jej inną nazwę (u nas: `temple_og_gains_k6`). W pliku `.env` należy zmienić pole `DB_NAME` na `DB_NAME=temple_of_gains_k6`.
+k6 uruchamia 10 wirtualnych użytkowników (VU) równolegle, którzy przez 15 sekund w pętli rejestrują użytkowników. Test wysyła POST /api/register z unikalnymi danymi użytkownika. Warunki pomyślnego ukończenia testu to: co najwyżej 5% requestów może się nie udać i 95% wszystkich requestów ma mieć czas odpowiedzi poniżej 800 ms.
+Do testów wydajności utworzyć należy kopię bazy danych i dać jej inną nazwę (u nas: `temple_og_gains_k6`). W pliku `.env` należy zmienić pole `DB_NAME` na `DB_NAME=temple_of_gains_k6`, a w pliku `server.js` w konfiguracji bazy z `.env` ustawić alternatywną nazwę bazy danych na `database: process.env.DB_NAME || 'temple_of_gains_k6'`.
 Aby uruchomić test należy użyć komendy:
 ```bash
 k6 run k6-register.js
 ```
 
-**Rejestracja - szybkie wpisywanie nazwy użytkownika**
-
-Inny proponowany test to test, czy przy szybkim wpisuwaniu nazwy użytkownika nie generujemy zbyt wiele requestów do bazy danych.
-
 ### 3. Fuzz testing
+
+Fuzz testing to technika testowania oprogramowania polegająca na automatycznym wysyłaniu do programu ogromnych ilości losowych, nieprawidłowych lub nieoczekiwanych danych, aby znaleźć w nim błędy, luki bezpieczeństwa (jak crashe, wycieki pamięci, nieautoryzowany dostęp) i inne defekty, które mogłyby zostać wykorzystane przez hakerów lub spowodować awarię aplikacji. Dla naszych testów sprawdzimy:
+
+**Rejestracja - oczekiwania wobec testu**
+- bardzo długie username/email (np. 10k znaków) - użytkownik nie może się zarejestrować
+- unicode/emoji w username - użytkownik nie może się zarejestrować
+- password ze znakami spoza regex (np. nowe linie, znaki łączące) - przejdzie test, jeśli nie ma nigdzie spacji i znaków spoza wpisywanych z klawiatury
+- confirmPassword puste/bardzo długie - musi być identyczne jak password niezależnie od długości
 
 ### 4. Testy akceptacyjne UAT (wykorzystujące UI)
 Test polegał na przetestowaniu całej aplikacji przez osobę, która nie uczestniczyła w projekcie i nie zna błędów lub zachowań strony. Miała za zadanie zarejestrować się, zalogować i dodać jakieś dane. Test wykazał, że:
@@ -96,10 +100,7 @@ Test polegał na przetestowaniu całej aplikacji przez osobę, która nie uczest
   - brak znaku specjalnego = błąd
   - poprawne = brak błędu
 
-![Zrzut ekranu z testów jednostkowych rejestracji](\src\assets\tests\validateRegisterTest.png "Podgląd wyników testu")
-
-**Inna strona**
-[testy innej strony]
+![Zrzut ekranu z testów jednostkowych rejestracji](./src/assets/tests/validateRegisterTest.png "Podgląd wyników testu")
 
 ## Komponentów (React Testing Library)
 
@@ -117,10 +118,7 @@ Test polegał na przetestowaniu całej aplikacji przez osobę, która nie uczest
   - pojawia się lista hintów (ul.passwordHints)
   - część pozycji ma klasę bad, a po spełnieniu warunków przechodzi na ok
 
-![Zrzut ekranu z testów komponentów rejestracji](\src\assets\tests\componentRegisterPageTest.png "Podgląd wyników testu")
-
-**Inna strona**
-[testy innej strony]
+![Zrzut ekranu z testów komponentów rejestracji](./src/assets/tests/componentRegisterPageTest.png "Podgląd wyników testu")
 
 ## Testy inegracyjne:
 
@@ -143,14 +141,27 @@ przepływy z `fetch("/api/check-username")` i `fetch("/api/register")`
 - Gdy fetch rzuci wyjątek (brak połączenia):
   - pokazuje `errors.general = 'Błąd połączenia z serwerem'`
 
-![Zrzut ekranu z testów integracyjnych rejestracji](\src\assets\tests\integrationRegisterPageTest.png "Podgląd wyników testu")
+![Zrzut ekranu z testów integracyjnych rejestracji](./src/assets/tests/integrationRegisterPageTest.png "Podgląd wyników testu")
 
-## Testy wydajności:
-Wyniki testów wydajności pokazały, że ....
+## Testy wydajności (XAMPP):
+Wyniki testów wydajności pokazały, że test zakończył się sukcesem. Przez 15 sekund udało się założyć 740 kont. Rate wyniósł 0%, czyli wszystkie próby założenia konta zakonczyły się sukcesem, a średni czas trwania operacji trwał 4.29 ms.
+
+![Zrzut ekranu z testów wydajności rejestracji](./src/assets/tests/k6-register-test.png "Podgląd wyników testu")
 
 ## Fuzzing
 **Rejestracja**
-- bardzo długie username/email (np. 10k znaków)
-- unicode/emoji w username
-- password ze znakami spoza regex (np. nowe linie, znaki łączące)
-- confirmPassword puste / bardzo długie
+
+Przeprowadzone zostało kilka testów, które ujawniły brak odporności na błędy, które założyliśmy na etapie projektowania.
+- 'expected: 10k username: cannot regist…' 235ms
+- 'expected: 10k email: cannot register' 78ms
+- 'expected: unicode/emoji in username: cannot register' 73ms
+- 'expected: password contains newline: cannot register' 16ms
+- 'expected: password contains combining mark: cannot register' 76ms
+- 'expected: password contains TAB: cannot register' 78ms
+- 'expected: password contains ANY space: cannot register' 62ms
+- 'expected: Long keyboard-only password (ASCII printable, no spaces) + confirm identical: can register' 51ms - pomyślnie
+- 'expected: confirmPassword empty: cannot register' 77ms
+- 'expected: very long confirmPassword identical: can register' 60ms - pomyślnie
+- 'expected: very long confirmPassword different: cannot register' 63ms - pomyślnie
+  
+![Zrzut ekranu z testów fuzzing rejestracji](./src/assets/tests/fuzz-testing.png "Podgląd wyników testu")
