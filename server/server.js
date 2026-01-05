@@ -178,7 +178,7 @@ app.post('/api/check-username', async (req, res) => {
       return res.status(409).json({ error: 'Nazwa użytkownika jest już zajęta.' });
     }
 
-    return res.status(200).json({info: "Nazwa wolna."})
+    return res.status(200).json({info: "Nazwa wolna."});
 });
 
 // Endpoint zwracający pomiary użytkownika

@@ -22,34 +22,43 @@ const Register_Page = () =>{
     const [typingTimer, setTypingTimer] = useState(null); // timer do sprawdzania nazwy
 
     const checkUsernameAvailability = async (username) => {
-        
-    if (!username || username.length < 3) {
-        setUsernameTaken(false);
-        return;
-    }
-
-    try {
-        const res = await fetch("/api/check-username", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username }),
-        });
-
-        if (!res.ok) {
-        const text = await res.text();
-        console.error("Bad response from /api/check-username:", res.status, text);
-        setUsernameTaken(false);
-        setErrors(prev => ({ ...prev, username: "Nazwa użytkownika jest już zajęta." }));
-        return;
+        if (!username || username.length < 5) {
+            setUsernameTaken(false);
+            return;
         }
 
-        const data = await res.json();
-        console.log(data);
-        setUsernameTaken(!data.available); // true = zajęta
-    } catch (err) {
-        console.error("Error checking username:", err);
-        setUsernameTaken(false);
-    }
+        try {
+            const res = await fetch("/api/check-username", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username }),
+            });
+
+            // 409 = nazwa zajęta
+            if (res.status === 409) {
+            const data = await res.json().catch(() => ({}));
+            setUsernameTaken(true);
+            setErrors((prev) => ({ ...prev, username: data?.error || "Nazwa użytkownika jest już zajęta." }));
+            return;
+            }
+
+            // 200 = nazwa wolna
+            if (res.ok) {
+            setUsernameTaken(false);
+            setErrors((prev) => {
+                const next = { ...prev };
+                delete next.username;
+                return next;
+            });
+            return;
+            }
+
+            // inne błędy
+            setUsernameTaken(false);
+        } catch (err) {
+            console.error("Error checking username:", err);
+            setUsernameTaken(false);
+        }
 };
 
     const validateField = (name, value, allValues) => {
@@ -92,7 +101,7 @@ const Register_Page = () =>{
         if (name === "confirmPassword") {
             if (!value) {
             tempErrors.confirmPassword = "Potwierdzenie hasła jest wymagane.";
-            } else if (value !== values.password) {
+            } else if (value !== allValues.password) {
             tempErrors.confirmPassword = "Hasła muszą być identyczne.";
             } else {
             delete tempErrors.confirmPassword;
@@ -249,9 +258,6 @@ const Register_Page = () =>{
                     onChange={handleChange} 
                     onBlur={handleBlur}></input>
                 {errors.username && <span className="error">{errors.username}</span>}
-                {!errors.username && usernameTaken && 
-                    <span className="error">{errors.username}</span>
-                }
                 <label htmlFor ="email">Adres e-mail</label>
                 <input 
                     id="email" 
