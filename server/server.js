@@ -158,12 +158,10 @@ app.post("/api/register", async (req, res) => {
     }
 
     if (existsEmail.length > 0) {
-      return res
-        .status(409)
-        .json({
-          error:
-            "E-mail jest już użyty przez innego użytkownika. Jeśli nie pamiętasz hasła, skontaktuj się z administratorem.",
-        });
+      return res.status(409).json({
+        error:
+          "E-mail jest już użyty przez innego użytkownika. Jeśli nie pamiętasz hasła, skontaktuj się z administratorem.",
+      });
     }
 
     // HASHOWANIE SHA256
@@ -220,6 +218,193 @@ app.get("/api/measurements", authenticateToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Endpoint dodający nowy pomiar
+app.post("/api/measurements", authenticateToken, async (req, res) => {
+  const {
+    date,
+    body_weight,
+    body_fat_perc,
+    chest,
+    waist,
+    hips,
+    biceps,
+    thighs,
+  } = req.body;
+
+  const userId = req.user.id;
+
+  // Walidacja podstawowa
+  if (!date || !body_weight) {
+    return res.status(400).json({ error: "Data i waga ciała są wymagane." });
+  }
+
+  const isISODate = /^\d{4}-\d{2}-\d{2}$/.test(date);
+  if (!isISODate) {
+    return res
+      .status(400)
+      .json({ error: "Niepoprawny format daty (wymagane YYYY-MM-DD)." });
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const selected = new Date(date);
+  selected.setHours(0, 0, 0, 0);
+
+  if (Number.isNaN(selected.getTime())) {
+    return res.status(400).json({ error: "Niepoprawna data." });
+  }
+
+  if (selected > today) {
+    return res
+      .status(400)
+      .json({ error: "Data pomiaru nie może być z przyszłości." });
+  }
+
+  try {
+    const [result] = await pool.query(
+      `INSERT INTO measurements 
+            (user_id, date, body_weight, body_fat_perc, chest, waist, hips, biceps, thighs) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        userId,
+        date,
+        body_weight,
+        body_fat_perc || null,
+        chest || null,
+        waist || null,
+        hips || null,
+        biceps || null,
+        thighs || null,
+      ],
+    );
+
+    res.status(201).json({
+      success: true,
+      id: result.insertId,
+      message: "Pomyślnie dodano pomiar.",
+    });
+  } catch (err) {
+    console.error("Add Measurement Error:", err);
+    res.status(500).json({ error: "Błąd bazy danych." });
+  }
+});
+
+// ENDPOINT Usuń pomiar (tylko właściciel)
+app.delete("/api/measurements/:id", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+
+  if (!id || Number.isNaN(Number(id))) {
+    return res.status(400).json({ error: "Niepoprawne ID pomiaru." });
+  }
+
+  try {
+    const [result] = await pool.query(
+      "DELETE FROM measurements WHERE id = ? AND user_id = ?",
+      [id, userId],
+    );
+
+    if (result.affectedRows === 0) {
+      // albo nie istnieje, albo nie należy do użytkownika
+      return res.status(404).json({ error: "Nie znaleziono pomiaru." });
+    }
+
+    return res.json({ success: true, id: Number(id) });
+  } catch (err) {
+    console.error("Delete Measurement Error:", err);
+    return res.status(500).json({ error: "Błąd bazy danych." });
+  }
+});
+
+// Endpoint edytujący pomiar (tylko właściciel)
+app.put("/api/measurements/:id", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+
+  const {
+    date,
+    body_weight,
+    body_fat_perc,
+    chest,
+    waist,
+    hips,
+    biceps,
+    thighs,
+  } = req.body;
+
+  if (!id || Number.isNaN(Number(id))) {
+    return res.status(400).json({ error: "Niepoprawne ID pomiaru." });
+  }
+  if (!date) {
+    return res.status(400).json({ error: "Data pomiaru jest wymagana." });
+  }
+
+  // Akceptujemy tylko YYYY-MM-DD
+  const isISODate = /^\d{4}-\d{2}-\d{2}$/.test(date);
+  if (!isISODate) {
+    return res
+      .status(400)
+      .json({ error: "Niepoprawny format daty (wymagane YYYY-MM-DD)." });
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const selected = new Date(date);
+  selected.setHours(0, 0, 0, 0);
+
+  if (Number.isNaN(selected.getTime())) {
+    return res.status(400).json({ error: "Niepoprawna data." });
+  }
+
+  if (selected > today) {
+    return res
+      .status(400)
+      .json({ error: "Data pomiaru nie może być z przyszłości." });
+  }
+
+  const toNumOrNull = (v) => {
+    if (v === "" || v === null || v === undefined) return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  try {
+    const [result] = await pool.query(
+      `UPDATE measurements
+       SET date = ?, body_weight = ?, body_fat_perc = ?, chest = ?, waist = ?, hips = ?, biceps = ?, thighs = ?
+       WHERE id = ? AND user_id = ?`,
+      [
+        date,
+        toNumOrNull(body_weight),
+        toNumOrNull(body_fat_perc),
+        toNumOrNull(chest),
+        toNumOrNull(waist),
+        toNumOrNull(hips),
+        toNumOrNull(biceps),
+        toNumOrNull(thighs),
+        id,
+        userId,
+      ],
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Nie znaleziono pomiaru." });
+    }
+
+    const [rows] = await pool.query(
+      "SELECT * FROM measurements WHERE id = ? AND user_id = ?",
+      [id, userId],
+    );
+
+    return res.json(rows[0]);
+  } catch (err) {
+    console.error("Update Measurement Error:", err);
+    return res.status(500).json({ error: "Błąd bazy danych." });
   }
 });
 
@@ -404,13 +589,11 @@ app.post("/api/exercises", authenticateToken, async (req, res) => {
       "INSERT INTO exercises (name, description, body_part, video_url) VALUES (?, ?, ?, ?)",
       [name, description, body_part, video_url],
     );
-    res
-      .status(201)
-      .json({
-        success: true,
-        id: result.insertId,
-        message: "Dodano ćwiczenie.",
-      });
+    res.status(201).json({
+      success: true,
+      id: result.insertId,
+      message: "Dodano ćwiczenie.",
+    });
   } catch (err) {
     console.error("Add Exercise Error:", err);
     res.status(500).json({ error: "Błąd bazy danych." });
@@ -446,13 +629,11 @@ app.post("/api/exercises", authenticateToken, async (req, res) => {
       "INSERT INTO exercises (name, description, body_part, video_url) VALUES (?, ?, ?, ?)",
       [name, description, body_part, video_url],
     );
-    res
-      .status(201)
-      .json({
-        success: true,
-        id: result.insertId,
-        message: "Dodano ćwiczenie.",
-      });
+    res.status(201).json({
+      success: true,
+      id: result.insertId,
+      message: "Dodano ćwiczenie.",
+    });
   } catch (err) {
     console.error("Add Exercise Error:", err);
     res.status(500).json({ error: "Błąd bazy danych." });

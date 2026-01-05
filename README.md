@@ -73,6 +73,7 @@ npm install
 # Instalacja ikon oraz mysql'a (w przypadku braku tych zależności)
 npm install react-icons
 npm install mysql2
+npm i recharts
 
 # W przypadku zablokowania skryptu przez PowerShell'a
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned

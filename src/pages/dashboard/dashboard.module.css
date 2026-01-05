@@ -1,12 +1,12 @@
 /* DASHBOARD PAGE */
 
-.dashboardBackground{
+.dashboardBackground {
   display: flex;
   min-height: 100vh;
   width: 100%;
 }
 
-.dashboardContent{
+.dashboardContent {
   background-color: var(--bg-primary);
   height: 100vh;
   width: 85%;
@@ -29,7 +29,7 @@
 /* content area inside dashboard; ensure it sits below the fixed navbar */
 .pageContent {
   flex: 1 1 auto;
-  padding-top: calc(var(--navbar-height, 4rem) + 2rem); /* navbar + small gap */
+  margin-top: calc(var(--navbar-height, 4rem) + 2rem); /* navbar + small gap */
   padding-left: 2rem;
   padding-right: 2rem;
 }
@@ -100,7 +100,7 @@
 
 .statsRow {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.5rem;
 }
 
@@ -132,7 +132,7 @@
 
 .mainGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.5rem;
 }
 
@@ -198,7 +198,7 @@
   justify-content: center;
   font-size: 1.6rem;
   cursor: pointer;
-  box-shadow: var(--card-shadow)
+  box-shadow: var(--card-shadow);
 }
 
 .fabActions {
@@ -214,7 +214,9 @@
   opacity: 0;
   pointer-events: none;
   transform: translateX(8px);
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .fabContainer:hover .fabActions {
