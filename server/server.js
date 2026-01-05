@@ -1,19 +1,30 @@
 // server.js (ES modules)
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import {dirname} from 'path';
-import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser';
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import cors from "cors";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import process from "process";
 
 // mysql database
-import mysql from 'mysql2/promise';
+import mysql from "mysql2/promise";
 
 // Ładowanie zmiennych środowiskowych z .env
 dotenv.config();
+
+console.log("CWD:", process.cwd());
+console.log("Loaded JWT_SECRET?", Boolean(process.env.JWT_SECRET));
+console.log("JWT_SECRET:", JSON.stringify(process.env.JWT_SECRET));
+
+if (!process.env.JWT_SECRET) {
+  throw new Error(
+    "Missing JWT_SECRET in environment. Check .env loading. .env should be in root folder.",
+  );
+}
 
 // Inicjalizacja Express i ustawienia ścieżek
 const __filename = fileURLToPath(import.meta.url);
@@ -31,185 +42,193 @@ app.use(cookieParser());
 
 // Konfiguracja bazy danych z pliku .env
 const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'temple_of_gains'
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "temple_of_gains",
 });
 
 // Statyczne pliki Reacta
-app.use(express.static(path.join(__dirname, '../dist')));
+app.use(express.static(path.join(__dirname, "../dist")));
 
 // --- MIDDLEWARE (BRAMKARZ) ---
 function authenticateToken(req, res, next) {
-    const token = req.cookies.token; // <<< ODCZYTAJ TOKEN Z CIASTECZKA
+  const token = req.cookies.token; // <<< ODCZYTAJ TOKEN Z CIASTECZKA
 
-    if (token == null) return res.sendStatus(401);
+  if (token == null) return res.sendStatus(401);
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            console.log("Błąd weryfikacji tokena:", err);
-            return res.sendStatus(403);
-        }
-        req.user = user;
-        console.log("Middleware: Zidentyfikowano użytkownika:", user);
-        next();
-    });
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      console.log("Błąd weryfikacji tokena:", err);
+      return res.sendStatus(403);
+    }
+    req.user = user;
+    console.log("Middleware: Zidentyfikowano użytkownika:", user);
+    next();
+  });
 }
 
 // API test
-app.get('/api', (_req, res) => res.json({ ok: true }));
-
+app.get("/api", (_req, res) => res.json({ ok: true }));
 
 // -- endpoints --
 
 // Endpoint logowania
-app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body;
-    console.log('Login attempt:', username);
+app.post("/api/login", async (req, res) => {
+  const { username, password } = req.body;
+  console.log("Login attempt:", username);
 
-    if (!username || !password) {
-        return res.status(400).json({ error: 'Please fill in the form' });
+  if (!username || !password) {
+    return res.status(400).json({ error: "Please fill in the form" });
+  }
+
+  try {
+    const [rows] = await pool.query("SELECT * FROM users WHERE username = ?", [
+      username,
+    ]);
+
+    if (rows.length === 0) {
+      return res.status(401).json({ error: "Incorrect username or password" });
     }
 
-    try {
-        const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
+    const user = rows[0];
 
-        if (rows.length === 0) {
-            return res.status(401).json({ error: 'Incorrect username or password' });
-        }
+    // hashowanie hasła SHA256
+    const hash = crypto.createHash("sha256").update(password).digest("hex");
 
-        const user = rows[0];
-
-        // hashowanie hasła SHA256
-        const hash = crypto.createHash('sha256').update(password).digest('hex');
-
-        if (hash !== user.password_hash) {
-            return res.status(401).json({ error: 'Incorrect username or password' });
-        }
-
-        // Generowanie tokena
-        const token = jwt.sign(
-            { id: user.id, username: user.username },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
-
-        // Zalogowano poprawnie
-        console.log(`Użytkownik ${username} zalogowany`);
-
-        // Odsyłamy token do frontendu razem z danymi użytkownika
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 3600000
-        });
-        res.json({
-            success: true,
-            user: {
-                id: user.id,
-                username: user.username,
-                email: user.email
-            }
-        });
-    } catch (err) {
-        console.error('Login error:', err);
-        res.status(500).json({ error: 'Database error' });
+    if (hash !== user.password_hash) {
+      return res.status(401).json({ error: "Incorrect username or password" });
     }
+
+    // Generowanie tokena
+    const token = jwt.sign(
+      { id: user.id, username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" },
+    );
+
+    // Zalogowano poprawnie
+    console.log(`Użytkownik ${username} zalogowany`);
+
+    // Odsyłamy token do frontendu razem z danymi użytkownika
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 3600000,
+    });
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Endpoint rejestracji
-app.post('/api/register', async (req, res) => {
+app.post("/api/register", async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
     if (!username || !email || !password) {
-      return res.status(400).json({ error: 'Missing data' });
+      return res.status(400).json({ error: "Missing data" });
     }
 
     // sprawdzanie czy jest juz taki uzytkownik o takim username lub emailu
     const [existsUser] = await pool.query(
-      'SELECT id FROM users WHERE username = ?',
-      [username]
+      "SELECT id FROM users WHERE username = ?",
+      [username],
     );
 
     const [existsEmail] = await pool.query(
-      'SELECT id FROM users WHERE email = ?',
-      [email]
+      "SELECT id FROM users WHERE email = ?",
+      [email],
     );
 
-    if (existsUser.length > 0)  {
-      return res.status(409).json({ error: 'Nazwa użytkownika jest już zajęta.' });
+    if (existsUser.length > 0) {
+      return res
+        .status(409)
+        .json({ error: "Nazwa użytkownika jest już zajęta." });
     }
 
-    if (existsEmail.length > 0)  {
-      return res.status(409).json({ error: 'E-mail jest już użyty przez innego użytkownika. Jeśli nie pamiętasz hasła, skontaktuj się z administratorem.' });
+    if (existsEmail.length > 0) {
+      return res
+        .status(409)
+        .json({
+          error:
+            "E-mail jest już użyty przez innego użytkownika. Jeśli nie pamiętasz hasła, skontaktuj się z administratorem.",
+        });
     }
 
-    // HASHOWANIE SHA256 
-    const hash = crypto.createHash('sha256').update(password).digest('hex');
+    // HASHOWANIE SHA256
+    const hash = crypto.createHash("sha256").update(password).digest("hex");
 
     // zapis do bazy
     await pool.query(
-      'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
-      [username, email, hash]
+      "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)",
+      [username, email, hash],
     );
 
     console.log(`Użytkownik ${username} zarejestrowany`);
     return res.status(201).json({ success: true });
-
   } catch (err) {
-    console.error('Register error:', err);
-    res.status(500).json({ error: 'Database error' });
+    console.error("Register error:", err);
+    res.status(500).json({ error: "Database error" });
   }
 });
 
 // endpoint do sprawdzania nazwy uzytkownika podczas rejestracji
-app.post('/api/check-username', async (req, res) => {
-    
-    console.log(req.body);
-    const [existsUser] = await pool.query(
-      'SELECT id FROM users WHERE username = ?',
-      [req.body.username]
-    );
+app.post("/api/check-username", async (req, res) => {
+  console.log(req.body);
+  const [existsUser] = await pool.query(
+    "SELECT id FROM users WHERE username = ?",
+    [req.body.username],
+  );
 
-    if (existsUser.length > 0)  {
-      return res.status(409).json({ error: 'Nazwa użytkownika jest już zajęta.' });
-    }
+  if (existsUser.length > 0) {
+    return res
+      .status(409)
+      .json({ error: "Nazwa użytkownika jest już zajęta." });
+  }
 
-    return res.status(200).json({info: "Nazwa wolna."});
+  return res.status(200).json({ info: "Nazwa wolna." });
 });
 
 // Endpoint zwracający pomiary użytkownika
 // POPRAWIONY: Pobiera ID z tokena (req.user.id), a nie z URL
-app.get('/api/measurements', authenticateToken, async (req, res) => {
-    // TU BYŁ BŁĄD: const userId = req.query.user_id;
-    // POPRAWKA:
-    const userId = req.user.id;
+app.get("/api/measurements", authenticateToken, async (req, res) => {
+  // TU BYŁ BŁĄD: const userId = req.query.user_id;
+  // POPRAWKA:
+  const userId = req.user.id;
 
-    console.log(`DEBUG: Endpoint measurements widzi User ID: ${userId}`);
+  console.log(`DEBUG: Endpoint measurements widzi User ID: ${userId}`);
 
-    try {
-        const [rows] = await pool.query(
-            'SELECT * FROM measurements WHERE user_id = ? ORDER BY date DESC',
-            [userId]
-        );
+  try {
+    const [rows] = await pool.query(
+      "SELECT * FROM measurements WHERE user_id = ? ORDER BY date DESC",
+      [userId],
+    );
 
-        console.log(`DEBUG: Znaleziono ${rows.length} pomiarów`); // DEBUG
-        res.json(rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Database error' });
-    }
+    console.log(`DEBUG: Znaleziono ${rows.length} pomiarów`); // DEBUG
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Endpoint zwracający plany treningowe użytkownika
-app.get('/api/plans', authenticateToken, async (req, res) => {
-    const userId = req.user.id;
-    try {
-        // Zapytanie łączące plany (workoutplans) z ćwiczeniami (exercises) poprzez tabelę łączącą (planexercises)
-        const query = `
+app.get("/api/plans", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    // Zapytanie łączące plany (workoutplans) z ćwiczeniami (exercises) poprzez tabelę łączącą (planexercises)
+    const query = `
             SELECT wp.id as plan_id, wp.name as plan_name, wp.description as plan_desc,
                    e.id as exercise_id, e.name as exercise_name, e.body_part
             FROM workoutplans wp
@@ -219,302 +238,327 @@ app.get('/api/plans', authenticateToken, async (req, res) => {
             ORDER BY wp.id DESC, pe.order_index ASC
         `;
 
-        const [rows] = await pool.query(query, [userId]);
+    const [rows] = await pool.query(query, [userId]);
 
-        // Grupujemy płaskie wyniki z bazy danych w obiekty planów zawierające tablice ćwiczeń
-        const plansMap = new Map();
+    // Grupujemy płaskie wyniki z bazy danych w obiekty planów zawierające tablice ćwiczeń
+    const plansMap = new Map();
 
-        rows.forEach(row => {
-            if (!plansMap.has(row.plan_id)) {
-                plansMap.set(row.plan_id, {
-                    id: row.plan_id,
-                    name: row.plan_name,
-                    description: row.plan_desc,
-                    exercises: [] // Pusta tablica na start
-                });
-            }
-
-            if (row.exercise_id) { // Jeśli plan ma przypisane ćwiczenie, dodajemy je do listy
-                plansMap.get(row.plan_id).exercises.push({
-                    id: row.exercise_id,
-                    name: row.exercise_name,
-                    body_part: row.body_part
-                });
-            }
+    rows.forEach((row) => {
+      if (!plansMap.has(row.plan_id)) {
+        plansMap.set(row.plan_id, {
+          id: row.plan_id,
+          name: row.plan_name,
+          description: row.plan_desc,
+          exercises: [], // Pusta tablica na start
         });
+      }
 
-        // Zamieniamy mapę z powrotem na tablicę, którą wyślemy do frontendu
-        const result = Array.from(plansMap.values());
-        res.json(result);
+      if (row.exercise_id) {
+        // Jeśli plan ma przypisane ćwiczenie, dodajemy je do listy
+        plansMap.get(row.plan_id).exercises.push({
+          id: row.exercise_id,
+          name: row.exercise_name,
+          body_part: row.body_part,
+        });
+      }
+    });
 
-    } catch (err) {
-        console.error("Błąd pobierania planów:", err);
-        res.status(500).json({ error: 'Database error' });
-    }
+    // Zamieniamy mapę z powrotem na tablicę, którą wyślemy do frontendu
+    const result = Array.from(plansMap.values());
+    res.json(result);
+  } catch (err) {
+    console.error("Błąd pobierania planów:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 // Endpoint do tworzenia planow
-app.post('/api/plans', authenticateToken, async (req, res) => {
-    const { name, description, exercises } = req.body;
-    const userId = req.user.id;
+app.post("/api/plans", authenticateToken, async (req, res) => {
+  const { name, description, exercises } = req.body;
+  const userId = req.user.id;
 
-    // Walidacja
-    if (!name) {
-        return res.status(400).json({ error: 'Nazwa planu jest wymagana.' });
+  // Walidacja
+  if (!name) {
+    return res.status(400).json({ error: "Nazwa planu jest wymagana." });
+  }
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // 1. Utwórz plan
+    const [planResult] = await connection.query(
+      "INSERT INTO workoutplans (user_id, name, description) VALUES (?, ?, ?)",
+      [userId, name, description],
+    );
+    const planId = planResult.insertId;
+
+    // 2. Jeśli wybrano ćwiczenia, przypisz je do planu
+    if (exercises && Array.isArray(exercises) && exercises.length > 0) {
+      const values = exercises.map((exId, index) => [planId, exId, index + 1]);
+      await connection.query(
+        "INSERT INTO planexercises (plan_id, exercise_id, order_index) VALUES ?",
+        [values],
+      );
     }
 
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
-
-        // 1. Utwórz plan
-        const [planResult] = await connection.query(
-            'INSERT INTO workoutplans (user_id, name, description) VALUES (?, ?, ?)',
-            [userId, name, description]
-        );
-        const planId = planResult.insertId;
-
-        // 2. Jeśli wybrano ćwiczenia, przypisz je do planu
-        if (exercises && Array.isArray(exercises) && exercises.length > 0) {
-            const values = exercises.map((exId, index) => [planId, exId, index + 1]);
-            await connection.query(
-                'INSERT INTO planexercises (plan_id, exercise_id, order_index) VALUES ?',
-                [values]
-            );
-        }
-
-        await connection.commit();
-        res.status(201).json({ success: true, id: planId, message: 'Plan został utworzony.' });
-
-    } catch (err) {
-        await connection.rollback();
-        console.error('Create Plan Error:', err);
-        res.status(500).json({ error: 'Błąd podczas tworzenia planu.' });
-    } finally {
-        connection.release();
-    }
+    await connection.commit();
+    res
+      .status(201)
+      .json({ success: true, id: planId, message: "Plan został utworzony." });
+  } catch (err) {
+    await connection.rollback();
+    console.error("Create Plan Error:", err);
+    res.status(500).json({ error: "Błąd podczas tworzenia planu." });
+  } finally {
+    connection.release();
+  }
 });
 // Endpoint do usuwania planów (DELETE)
-app.delete('/api/plans/:id', authenticateToken, async (req, res) => {
-    const planId = req.params.id;
-    const userId = req.user.id;
+app.delete("/api/plans/:id", authenticateToken, async (req, res) => {
+  const planId = req.params.id;
+  const userId = req.user.id;
 
-    try {
-        // Sprawdź, czy plan należy do użytkownika
-        const [result] = await pool.query(
-            'DELETE FROM workoutplans WHERE id = ? AND user_id = ?',
-            [planId, userId]
-        );
+  try {
+    // Sprawdź, czy plan należy do użytkownika
+    const [result] = await pool.query(
+      "DELETE FROM workoutplans WHERE id = ? AND user_id = ?",
+      [planId, userId],
+    );
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Plan nie istnieje lub brak uprawnień.' });
-        }
-
-        res.json({ success: true, message: 'Plan usunięty.' });
-    } catch (err) {
-        console.error('Delete Plan Error:', err);
-        res.status(500).json({ error: 'Błąd bazy danych.' });
+    if (result.affectedRows === 0) {
+      return res
+        .status(404)
+        .json({ error: "Plan nie istnieje lub brak uprawnień." });
     }
+
+    res.json({ success: true, message: "Plan usunięty." });
+  } catch (err) {
+    console.error("Delete Plan Error:", err);
+    res.status(500).json({ error: "Błąd bazy danych." });
+  }
 });
 
 // Endpoint do edycji planow (PUT)
-app.put('/api/plans/:id', authenticateToken, async (req, res) => {
-    const planId = req.params.id;
-    const userId = req.user.id;
-    const { name, description, exercises } = req.body; // exercises = tablica ID wybranych ćwiczeń
+app.put("/api/plans/:id", authenticateToken, async (req, res) => {
+  const planId = req.params.id;
+  const userId = req.user.id;
+  const { name, description, exercises } = req.body; // exercises = tablica ID wybranych ćwiczeń
 
-    if (!name) return res.status(400).json({ error: 'Nazwa jest wymagana.' });
+  if (!name) return res.status(400).json({ error: "Nazwa jest wymagana." });
 
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
 
-        // 1. Aktualizacja nazwy i opisu planu
-        const [updateResult] = await connection.query(
-            'UPDATE workoutplans SET name = ?, description = ? WHERE id = ? AND user_id = ?',
-            [name, description, planId, userId]
-        );
+    // 1. Aktualizacja nazwy i opisu planu
+    const [updateResult] = await connection.query(
+      "UPDATE workoutplans SET name = ?, description = ? WHERE id = ? AND user_id = ?",
+      [name, description, planId, userId],
+    );
 
-        if (updateResult.affectedRows === 0) {
-            await connection.rollback();
-            return res.status(404).json({ error: 'Plan nie istnieje lub brak uprawnień.' });
-        }
-
-        // 2. Aktualizacja ćwiczeń
-        await connection.query('DELETE FROM planexercises WHERE plan_id = ?', [planId]);
-
-        // 3. Dodaj nowe ćwiczenia, jeśli jakieś zaznaczono
-        if (exercises && Array.isArray(exercises) && exercises.length > 0) {
-            const values = exercises.map((exId, index) => [planId, exId, index + 1]);
-            await connection.query(
-                'INSERT INTO planexercises (plan_id, exercise_id, order_index) VALUES ?',
-                [values]
-            );
-        }
-
-        await connection.commit();
-        res.json({ success: true, message: 'Plan zaktualizowany.' });
-
-    } catch (err) {
-        await connection.rollback();
-        console.error('Update Plan Error:', err);
-        res.status(500).json({ error: 'Błąd podczas edycji planu.' });
-    } finally {
-        connection.release();
+    if (updateResult.affectedRows === 0) {
+      await connection.rollback();
+      return res
+        .status(404)
+        .json({ error: "Plan nie istnieje lub brak uprawnień." });
     }
+
+    // 2. Aktualizacja ćwiczeń
+    await connection.query("DELETE FROM planexercises WHERE plan_id = ?", [
+      planId,
+    ]);
+
+    // 3. Dodaj nowe ćwiczenia, jeśli jakieś zaznaczono
+    if (exercises && Array.isArray(exercises) && exercises.length > 0) {
+      const values = exercises.map((exId, index) => [planId, exId, index + 1]);
+      await connection.query(
+        "INSERT INTO planexercises (plan_id, exercise_id, order_index) VALUES ?",
+        [values],
+      );
+    }
+
+    await connection.commit();
+    res.json({ success: true, message: "Plan zaktualizowany." });
+  } catch (err) {
+    await connection.rollback();
+    console.error("Update Plan Error:", err);
+    res.status(500).json({ error: "Błąd podczas edycji planu." });
+  } finally {
+    connection.release();
+  }
 });
 
-
 // Endpoint dodający nowe ćwiczenie do bazy
-app.post('/api/exercises', authenticateToken, async (req, res) => {
-    const { name, description, body_part, video_url } = req.body;
+app.post("/api/exercises", authenticateToken, async (req, res) => {
+  const { name, description, body_part, video_url } = req.body;
 
-    // Walidacja
-    if (!name || !body_part) {
-        return res.status(400).json({ error: 'Nazwa i partia mięśniowa są wymagane.' });
-    }
+  // Walidacja
+  if (!name || !body_part) {
+    return res
+      .status(400)
+      .json({ error: "Nazwa i partia mięśniowa są wymagane." });
+  }
 
-    try {
-        const [result] = await pool.query(
-            'INSERT INTO exercises (name, description, body_part, video_url) VALUES (?, ?, ?, ?)',
-            [name, description, body_part, video_url]
-        );
-        res.status(201).json({ success: true, id: result.insertId, message: 'Dodano ćwiczenie.' });
-    } catch (err) {
-        console.error('Add Exercise Error:', err);
-        res.status(500).json({ error: 'Błąd bazy danych.' });
-    }
+  try {
+    const [result] = await pool.query(
+      "INSERT INTO exercises (name, description, body_part, video_url) VALUES (?, ?, ?, ?)",
+      [name, description, body_part, video_url],
+    );
+    res
+      .status(201)
+      .json({
+        success: true,
+        id: result.insertId,
+        message: "Dodano ćwiczenie.",
+      });
+  } catch (err) {
+    console.error("Add Exercise Error:", err);
+    res.status(500).json({ error: "Błąd bazy danych." });
+  }
 });
 
 // Endpoint zwracający bazę wszystkich ćwiczeń
-app.get('/api/exercises', authenticateToken, async (req, res) => {
-    try {
-        const [rows] = await pool.query('SELECT * FROM exercises ORDER BY body_part, name');
-        res.json(rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Database error' });
-    }
+app.get("/api/exercises", authenticateToken, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT * FROM exercises ORDER BY body_part, name",
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Endpoint dodający nowe ćwiczenia
-app.post('/api/exercises', authenticateToken, async (req, res) => {
-    const { name, description, body_part, video_url } = req.body;
+app.post("/api/exercises", authenticateToken, async (req, res) => {
+  const { name, description, body_part, video_url } = req.body;
 
-    // Walidacja
-    if (!name || !body_part) {
-        return res.status(400).json({ error: 'Nazwa i partia mięśniowa są wymagane.' });
-    }
+  // Walidacja
+  if (!name || !body_part) {
+    return res
+      .status(400)
+      .json({ error: "Nazwa i partia mięśniowa są wymagane." });
+  }
 
-    try {
-        const [result] = await pool.query(
-            'INSERT INTO exercises (name, description, body_part, video_url) VALUES (?, ?, ?, ?)',
-            [name, description, body_part, video_url]
-        );
-        res.status(201).json({ success: true, id: result.insertId, message: 'Dodano ćwiczenie.' });
-    } catch (err) {
-        console.error('Add Exercise Error:', err);
-        res.status(500).json({ error: 'Błąd bazy danych.' });
-    }
+  try {
+    const [result] = await pool.query(
+      "INSERT INTO exercises (name, description, body_part, video_url) VALUES (?, ?, ?, ?)",
+      [name, description, body_part, video_url],
+    );
+    res
+      .status(201)
+      .json({
+        success: true,
+        id: result.insertId,
+        message: "Dodano ćwiczenie.",
+      });
+  } catch (err) {
+    console.error("Add Exercise Error:", err);
+    res.status(500).json({ error: "Błąd bazy danych." });
+  }
 });
 // Endpoint usuwanie ćwiczen (DELETE)
-app.delete('/api/exercises/:id', authenticateToken, async (req, res) => {
-    const exerciseId = req.params.id;
+app.delete("/api/exercises/:id", authenticateToken, async (req, res) => {
+  const exerciseId = req.params.id;
 
-    try {
-        // Uwaga: Baza danych jest skonfigurowana z "ON DELETE CASCADE" dla planów i historii,
-        // więc usunięcie ćwiczenia usunie je również z wszystkich planów treningowych!
-        const [result] = await pool.query('DELETE FROM exercises WHERE id = ?', [exerciseId]);
+  try {
+    // Uwaga: Baza danych jest skonfigurowana z "ON DELETE CASCADE" dla planów i historii,
+    // więc usunięcie ćwiczenia usunie je również z wszystkich planów treningowych!
+    const [result] = await pool.query("DELETE FROM exercises WHERE id = ?", [
+      exerciseId,
+    ]);
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Ćwiczenie nie istnieje.' });
-        }
-
-        res.json({ success: true, message: 'Ćwiczenie usunięte.' });
-    } catch (err) {
-        console.error('Delete Exercise Error:', err);
-        res.status(500).json({ error: 'Błąd bazy danych.' });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Ćwiczenie nie istnieje." });
     }
+
+    res.json({ success: true, message: "Ćwiczenie usunięte." });
+  } catch (err) {
+    console.error("Delete Exercise Error:", err);
+    res.status(500).json({ error: "Błąd bazy danych." });
+  }
 });
 
 // Endpoint pozwalajacy edytowac cwiczenia
-app.put('/api/exercises/:id', authenticateToken, async (req, res) => {
-    const exerciseId = req.params.id;
-    const { name, description, body_part, video_url } = req.body;
+app.put("/api/exercises/:id", authenticateToken, async (req, res) => {
+  const exerciseId = req.params.id;
+  const { name, description, body_part, video_url } = req.body;
 
-    if (!name || !body_part) {
-        return res.status(400).json({ error: 'Nazwa i partia mięśniowa są wymagane.' });
+  if (!name || !body_part) {
+    return res
+      .status(400)
+      .json({ error: "Nazwa i partia mięśniowa są wymagane." });
+  }
+
+  try {
+    const [result] = await pool.query(
+      "UPDATE exercises SET name = ?, description = ?, body_part = ?, video_url = ? WHERE id = ?",
+      [name, description, body_part, video_url, exerciseId],
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Ćwiczenie nie istnieje." });
     }
 
-    try {
-        const [result] = await pool.query(
-            'UPDATE exercises SET name = ?, description = ?, body_part = ?, video_url = ? WHERE id = ?',
-            [name, description, body_part, video_url, exerciseId]
-        );
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Ćwiczenie nie istnieje.' });
-        }
-
-        res.json({ success: true, message: 'Ćwiczenie zaktualizowane.' });
-    } catch (err) {
-        console.error('Update Exercise Error:', err);
-        res.status(500).json({ error: 'Błąd bazy danych.' });
-    }
+    res.json({ success: true, message: "Ćwiczenie zaktualizowane." });
+  } catch (err) {
+    console.error("Update Exercise Error:", err);
+    res.status(500).json({ error: "Błąd bazy danych." });
+  }
 });
 // Endpoint zwracający historię treningów użytkownika
-app.get('/api/history', authenticateToken, async (req, res) => {
-    const userId = req.user.id;
-    try {
-        const [rows] = await pool.query(
-            'SELECT * FROM workouts WHERE user_id = ? ORDER BY date DESC',
-            [userId]
-        );
-        res.json(rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Database error' });
-    }
+app.get("/api/history", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const [rows] = await pool.query(
+      "SELECT * FROM workouts WHERE user_id = ? ORDER BY date DESC",
+      [userId],
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 // Endpoint zwracający dane usera (do ustawień)
-app.get('/api/user-settings', authenticateToken, async (req, res) => {
-    const userId = req.user.id;
-    try {
-        const [rows] = await pool.query(
-            'SELECT id, username, email FROM users WHERE id = ?',
-            [userId]
-        );
-        if (rows.length === 0) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        res.json(rows[0]); // Zwracamy tylko obiekt użytkownika, nie tablicę
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Database error' });
+app.get("/api/user-settings", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const [rows] = await pool.query(
+      "SELECT id, username, email FROM users WHERE id = ?",
+      [userId],
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
     }
+    res.json(rows[0]); // Zwracamy tylko obiekt użytkownika, nie tablicę
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Endpoint wylogowania
-app.post('/api/logout', (req, res) => {
-    res.clearCookie('token', { httpOnly: true, sameSite: 'strict' });
-    res.json({ success: true, message: "Wylogowano" });
+app.post("/api/logout", (req, res) => {
+  res.clearCookie("token", { httpOnly: true, sameSite: "strict" });
+  res.json({ success: true, message: "Wylogowano" });
 });
-
-
 
 // załadowanie strony z pliku (obsługa routingu Reacta)
 app.use((req, res) => {
-    res.sendFile(path.join(__dirname, '../dist/index.html'));
+  res.sendFile(path.join(__dirname, "../dist/index.html"));
 });
 
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
 
 // Test połączenia z bazą
 (async () => {
-    try {
-        console.log('Połączono z bazą MySQL!');
-    } catch (err) {
-        console.error('Błąd połączenia z bazą:', err.message);
-    }
+  try {
+    console.log("Połączono z bazą MySQL!");
+  } catch (err) {
+    console.error("Błąd połączenia z bazą:", err.message);
+  }
 })();
