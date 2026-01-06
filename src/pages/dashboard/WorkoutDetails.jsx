@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useWorkoutDetails from "../../hooks/useWorkoutsDetails";
-import styles from "./history.module.css"; // możesz dać osobny plik, ale na start OK
+import styles from "./history.module.css";
 
 export default function WorkoutDetails() {
   const navigate = useNavigate();

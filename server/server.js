@@ -219,7 +219,6 @@ app.get("/api/workouts/stats", authenticateToken, async (req, res) => {
     const lastWorkout = lastRows[0] || null;
 
     // 2) Treningi w tym tygodniu (ISO week) + tonaż tygodnia (w tym tygodniu)
-    // LEFT JOIN żeby trening bez serii dawał tonaż = 0
     const [last7dRows] = await pool.query(
       `
   SELECT

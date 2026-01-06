@@ -33,7 +33,7 @@ export default function Dashboard() {
   }, [navigate]);
 
   if (isLoading) {
-    return null; // Możesz tu dać komponent <Spinner />
+    return null;
   }
 
   const today = new Date().toLocaleDateString("pl-PL", {

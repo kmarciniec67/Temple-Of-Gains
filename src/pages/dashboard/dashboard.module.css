@@ -2,12 +2,11 @@
 
 .dashboardContainer {
   display: flex;
-  min-height: 100vh; /* zamiast height: 100vh */
+  min-height: 100vh;
   width: 100%;
   background: var(--bg-primary);
 }
 
-/* content area inside dashboard; sits below fixed navbar */
 .pageContent {
   flex: 1 1 auto;
   min-width: 0; /* ważne przy gridach */
@@ -17,13 +16,11 @@
   z-index: 800;
 }
 
-/* sidebar push */
 :global(.sidebar-open) .pageContent {
   margin-left: var(--sidebar-width, 24vw);
   transition: margin-left 0.3s ease;
 }
 
-/* On small screens we don't push content; sidebar overlays instead */
 @media (max-width: 48em) {
   :global(.sidebar-open) .pageContent {
     margin-left: 0;
@@ -36,7 +33,6 @@
 }
 
 /* HEADER */
-
 .headerRow {
   display: flex;
   align-items: flex-start;
@@ -46,7 +42,6 @@
 }
 
 .greetingHeader {
-  /* poprawiona literówka */
   font-size: 2rem;
   font-weight: 800;
   color: var(--text-primary);
@@ -68,12 +63,10 @@
 }
 
 .dateText {
-  /* poprawiona nazwa */
   font-size: 0.95rem;
 }
 
 .calendarIcon {
-  /* jeśli używasz w JSX */
   font-size: 1.1rem;
 }
 
@@ -193,7 +186,7 @@
   background: var(--bg-hover);
 }
 
-/* BUTTON (u Ciebie używany pod tabelką) */
+/* BUTTON */
 .primaryButton {
   margin-top: 0.8rem;
   appearance: none;
@@ -297,8 +290,6 @@
   color: var(--link-hover);
   text-decoration: underline;
 }
-
-/* RESPONSIVE */
 
 @media (max-width: 900px) {
   .statsRow {

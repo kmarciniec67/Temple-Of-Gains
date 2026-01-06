@@ -1,5 +1,4 @@
 /* history.module.css */
-/* W pełni oparte o zmienne z :root[data-theme="dark/light"] */
 
 .historyBackground {
   min-height: 100vh;
@@ -59,7 +58,7 @@
   color: var(--text-secondary);
 }
 
-/* Podsumowanie: ćwiczenia / serie / tonaż */
+/* stats dashboard */
 .historySummaryRow {
   display: flex;
   flex-wrap: wrap;
@@ -112,12 +111,7 @@
 
 .backButton:hover {
   background: var(--bg-hover);
-  border-color: rgba(
-    148,
-    163,
-    184,
-    0.55
-  ); /* delikatnie mocniej niż --border-subtle */
+  border-color: rgba(148, 163, 184, 0.55);
   box-shadow: var(--card-shadow-hover);
 }
 
@@ -127,7 +121,7 @@
 }
 
 .backButton:focus-visible {
-  outline: 3px solid rgba(79, 70, 229, 0.35); /* akcent focus */
+  outline: 3px solid rgba(79, 70, 229, 0.35);
   outline-offset: 2px;
 }
 
@@ -177,7 +171,7 @@
   opacity: 0.95;
 }
 
-/* Responsywność */
+/* respon */
 @media (max-width: 520px) {
   .historyContainer h1 {
     font-size: 34px;
