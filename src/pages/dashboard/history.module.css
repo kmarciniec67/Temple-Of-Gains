@@ -1,0 +1,203 @@
+/* history.module.css */
+/* W pełni oparte o zmienne z :root[data-theme="dark/light"] */
+
+.historyBackground {
+  min-height: 100vh;
+  padding: 28px 16px 48px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.historyContainer {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.historyContainer h1 {
+  font-size: 44px;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 8px 0 22px;
+  color: var(--text-primary);
+}
+
+/* Karta treningu */
+.historyCard {
+  background: var(--bg-card-dashboard);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  margin: 12px 0;
+  box-shadow: var(--card-shadow);
+
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.historyCard:hover {
+  transform: translateY(-2px);
+  background: var(--bg-hover);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.historyCard h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.historyCard p {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+/* Podsumowanie: ćwiczenia / serie / tonaż */
+.historySummaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.historySummaryRow span {
+  font-size: 13px;
+  line-height: 1;
+  padding: 8px 10px;
+  border-radius: 999px;
+
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+/* Pagination */
+.paginationRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.paginationRow span {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.backButton {
+  appearance: none;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+
+  padding: 10px 14px;
+  border-radius: 12px;
+
+  font-weight: 750;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+
+  box-shadow: var(--card-shadow);
+}
+
+.backButton:hover {
+  background: var(--bg-hover);
+  border-color: rgba(
+    148,
+    163,
+    184,
+    0.55
+  ); /* delikatnie mocniej niż --border-subtle */
+  box-shadow: var(--card-shadow-hover);
+}
+
+.backButton:active {
+  transform: translateY(1px);
+  box-shadow: var(--card-shadow);
+}
+
+.backButton:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, 0.35); /* akcent focus */
+  outline-offset: 2px;
+}
+
+.paginationRow button {
+  appearance: none;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 650;
+  cursor: pointer;
+
+  transition:
+    transform 140ms ease,
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.paginationRow button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  transform: translateY(-1px);
+}
+
+.paginationRow button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.primaryButton {
+  appearance: none;
+  border: none;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+
+  transition:
+    transform 140ms ease,
+    opacity 140ms ease;
+}
+
+.primaryButton:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+/* Responsywność */
+@media (max-width: 520px) {
+  .historyContainer h1 {
+    font-size: 34px;
+  }
+
+  .historyCard h2 {
+    font-size: 18px;
+  }
+
+  .historySummaryRow span {
+    font-size: 12px;
+    padding: 7px 9px;
+  }
+
+  .paginationRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .paginationRow button {
+    width: 100%;
+  }
+}
