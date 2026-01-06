@@ -198,6 +198,59 @@ app.post("/api/check-username", async (req, res) => {
   return res.status(200).json({ info: "Nazwa wolna." });
 });
 
+//Endpoint do stats w dashboard
+app.get("/api/workouts/stats", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    // 1) Ostatni trening + nazwa planu
+    const [lastRows] = await pool.query(
+      `
+      SELECT w.id, w.date, w.plan_id, wp.name AS plan_name
+      FROM workouts w
+      LEFT JOIN workoutplans wp ON wp.id = w.plan_id
+      WHERE w.user_id = ?
+      ORDER BY w.date DESC
+      LIMIT 1
+      `,
+      [userId],
+    );
+
+    const lastWorkout = lastRows[0] || null;
+
+    // 2) Treningi w tym tygodniu (ISO week) + tonaż tygodnia (w tym tygodniu)
+    const [last7dRows] = await pool.query(
+      `
+  SELECT
+    COUNT(DISTINCT w.id) AS last7d_workouts_count,
+    COALESCE(SUM(COALESCE(wd.reps,0) * COALESCE(wd.weight,0)), 0) AS last7d_total_volume
+  FROM workouts w
+  LEFT JOIN workoutdetails wd ON wd.workout_id = w.id
+  WHERE w.user_id = ?
+    AND w.date >= (NOW() - INTERVAL 7 DAY)
+  `,
+      [userId],
+    );
+
+    const last7dWorkoutsCount = Number(
+      last7dRows[0]?.last7d_workouts_count || 0,
+    );
+    const last7dTotalVolume = Number(last7dRows[0]?.last7d_total_volume || 0);
+    const last7dAvgVolume =
+      last7dWorkoutsCount > 0 ? last7dTotalVolume / last7dWorkoutsCount : 0;
+
+    res.json({
+      last_workout: lastWorkout,
+      last7d_workouts_count: last7dWorkoutsCount,
+      last7d_total_volume: last7dTotalVolume,
+      last7d_avg_volume: last7dAvgVolume,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // Endpoint zwracający pomiary użytkownika
 // POPRAWIONY: Pobiera ID z tokena (req.user.id), a nie z URL
 app.get("/api/measurements", authenticateToken, async (req, res) => {
@@ -688,6 +741,7 @@ app.put("/api/exercises/:id", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Błąd bazy danych." });
   }
 });
+
 // Endpoint zwracający historię treningów użytkownika
 app.get("/api/history", authenticateToken, async (req, res) => {
   const userId = req.user.id;
@@ -702,6 +756,126 @@ app.get("/api/history", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+// Endpoint zwraca workouts details
+app.get("/api/workouts", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+
+  const limit = Math.min(parseInt(req.query.limit ?? "20", 10), 100);
+  const offset = Math.max(parseInt(req.query.offset ?? "0", 10), 0);
+
+  try {
+    const [rows] = await pool.query(
+      `
+      SELECT
+        w.id,
+        w.plan_id,
+        w.date,
+        wp.name AS plan_name,
+
+        COUNT(wd.id) AS sets_count,
+        COUNT(DISTINCT wd.exercise_id) AS exercises_count,
+
+        COALESCE(SUM(COALESCE(wd.reps, 0) * COALESCE(wd.weight, 0)), 0) AS total_volume,
+        COALESCE(SUM(COALESCE(wd.weight, 0)), 0) AS total_weight_sum
+
+      FROM workouts w
+      LEFT JOIN workoutplans wp ON wp.id = w.plan_id
+      LEFT JOIN workoutdetails wd ON wd.workout_id = w.id
+      WHERE w.user_id = ?
+      GROUP BY w.id
+      ORDER BY w.date DESC
+      LIMIT ? OFFSET ?
+      `,
+      [userId, limit, offset],
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Endpoint zwracający jeden treningowe
+app.get("/api/workouts/:id", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  const workoutId = Number(req.params.id);
+
+  if (!Number.isFinite(workoutId)) {
+    return res.status(400).json({ error: "Invalid workout id" });
+  }
+
+  try {
+    const [[workout]] = await pool.query(
+      `
+      SELECT
+        w.id, w.plan_id, w.date,
+        wp.name AS plan_name,
+        wp.description AS plan_description
+      FROM workouts w
+      LEFT JOIN workoutplans wp ON wp.id = w.plan_id
+      WHERE w.id = ? AND w.user_id = ?
+      `,
+      [workoutId, userId],
+    );
+
+    if (!workout) return res.status(404).json({ error: "Workout not found" });
+
+    const [details] = await pool.query(
+      `
+      SELECT
+        wd.id,
+        wd.exercise_id,
+        e.name AS exercise_name,
+        wd.set_number,
+        wd.reps,
+        wd.weight
+      FROM workoutdetails wd
+      JOIN exercises e ON e.id = wd.exercise_id
+      WHERE wd.workout_id = ?
+      ORDER BY wd.exercise_id ASC, wd.set_number ASC, wd.id ASC
+      `,
+      [workoutId],
+    );
+
+    // Zagnieżdżenie: ćwiczenie -> serie
+    const map = new Map();
+    for (const row of details) {
+      if (!map.has(row.exercise_id)) {
+        map.set(row.exercise_id, {
+          exercise_id: row.exercise_id,
+          exercise_name: row.exercise_name,
+          sets: [],
+        });
+      }
+      map.get(row.exercise_id).sets.push({
+        id: row.id,
+        set_number: row.set_number,
+        reps: row.reps,
+        weight: row.weight,
+      });
+    }
+
+    const exercises = Array.from(map.values());
+
+    // Możesz też policzyć podsumowanie w backendzie (opcjonalnie)
+    const summary = {
+      exercises_count: exercises.length,
+      sets_count: details.length,
+      total_volume: details.reduce(
+        (acc, s) => acc + Number(s.reps ?? 0) * Number(s.weight ?? 0),
+        0,
+      ),
+    };
+
+    res.json({ ...workout, summary, exercises });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 // Endpoint zwracający dane usera (do ustawień)
 app.get("/api/user-settings", authenticateToken, async (req, res) => {
   const userId = req.user.id;

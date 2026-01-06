@@ -1,77 +1,57 @@
-/* DASHBOARD PAGE */
+/* DASHBOARD LAYOUT */
 
-.dashboardBackground {
+.dashboardContainer {
   display: flex;
   min-height: 100vh;
   width: 100%;
+  background: var(--bg-primary);
 }
 
-.dashboardContent {
-  background-color: var(--bg-primary);
-  height: 100vh;
-  width: 85%;
-}
-/* DASHBOARD PAGE */
-
-.pageContainer {
-  display: flex;
-  height: 100vh;
-  background-color: var(--bg-primary);
-}
-
-/* some components expect .dashboardContainer (Dashboard.jsx uses styles.dashboardContainer) */
-.dashboardContainer {
-  display: flex;
-  height: 100vh;
-  background-color: var(--bg-primary);
-}
-
-/* content area inside dashboard; ensure it sits below the fixed navbar */
 .pageContent {
   flex: 1 1 auto;
-  margin-top: calc(var(--navbar-height, 4rem) + 2rem); /* navbar + small gap */
-  padding-left: 2rem;
-  padding-right: 2rem;
-}
-
-/* ensure page content sits above sidebar on wide screens */
-.pageContent {
+  min-width: 0; /* ważne przy gridach */
+  padding: 0 2rem 2.5rem;
+  margin-top: calc(var(--navbar-height, 4rem) + 1.5rem);
   position: relative;
   z-index: 800;
 }
 
-/* when the sidebar is open, push page content to the right so it isn't covered */
 :global(.sidebar-open) .pageContent {
   margin-left: var(--sidebar-width, 24vw);
   transition: margin-left 0.3s ease;
 }
 
-/* On small screens we don't push content; sidebar overlays instead */
 @media (max-width: 48em) {
   :global(.sidebar-open) .pageContent {
     margin-left: 0;
-    padding-top: calc(var(--navbar-height, 4rem) + 2rem);
-    padding-left: 1rem;
+  }
+
+  .pageContent {
+    padding: 0 1rem 2rem;
+    margin-top: calc(var(--navbar-height, 4rem) + 1.25rem);
   }
 }
 
+/* HEADER */
 .headerRow {
   display: flex;
-  justify-content: space-between;
-  gap: 1.5rem;
   align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
   margin-bottom: 1.5rem;
 }
 
-.greatingHeader {
+.greetingHeader {
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .greeting {
-  font-size: 1.25rem;
+  margin-top: 0.5rem;
+  font-size: 1.1rem;
   color: var(--text-secondary);
 }
 
@@ -79,61 +59,67 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.dataText {
-  font-size: 1rem;
   color: var(--text-secondary);
 }
 
-.dataIcon {
-  font-size: 1.25rem;
-  color: var(--text-secondary);
+.dateText {
+  font-size: 0.95rem;
 }
+
+.calendarIcon {
+  font-size: 1.1rem;
+}
+
+/* STATS */
 
 .statsContainer {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  margin-bottom: 2rem;
 }
 
 .statsRow {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .statCard {
-  background-color: var(--bg-card-dashboard);
-  padding: 1rem;
-  border-radius: 0.5rem;
+  background: var(--bg-card-dashboard);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
   box-shadow: var(--card-shadow);
+
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
 .statIcon {
-  font-size: 2rem;
+  font-size: 1.8rem;
   color: var(--accent-color);
 }
 
 .statLabel {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
 }
 
 .statValue {
-  font-size: 1.5rem;
-  font-weight: 700;
+  margin-top: 0.2rem;
+  font-size: 1.45rem;
+  font-weight: 800;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
+
+/* MAIN GRID */
 
 .mainGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .cardLastTrainingWide {
@@ -141,39 +127,99 @@
 }
 
 .card {
-  background-color: var(--bg-card-dashboard);
-  padding: 1rem 1rem 1rem 1rem;
-  border-radius: 0.5rem;
+  background: var(--bg-card-dashboard);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 1rem;
   box-shadow: var(--card-shadow);
+  overflow: hidden;
 }
 
 .cardTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+  font-weight: 750;
   color: var(--text-primary);
   text-align: center;
 }
 
+/* CHART CONTAINER */
 .chartPlaceholder {
-  min-height: 200px;
-  background-color: var(--bg-secondary);
-  border-radius: 0.5rem;
-  border: 1px dashed var(--border-color);
-  justify-content: center;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  padding: 0.75rem;
 }
+
+/* TABLE (ostatnie treningi) */
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
-  background-color: var(--bg-secondary);
+  font-size: 0.92rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.table th,
-.table td {
-  padding: 0.45rem 0.6rem;
+.table thead th {
   text-align: left;
+  padding: 0.65rem 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-subtle);
 }
+
+.table tbody td {
+  padding: 0.6rem 0.75rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover td {
+  background: var(--bg-hover);
+}
+
+/* BUTTON */
+.primaryButton {
+  margin-top: 0.8rem;
+  appearance: none;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+
+  padding: 10px 14px;
+  border-radius: 12px;
+
+  font-weight: 750;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  box-shadow: var(--card-shadow);
+  cursor: pointer;
+}
+
+.primaryButton:hover {
+  background: var(--bg-hover);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.primaryButton:active {
+  transform: translateY(1px);
+  box-shadow: var(--card-shadow);
+}
+
+.primaryButton:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, 0.35);
+  outline-offset: 2px;
+}
+
+/* FAB */
 
 .fabContainer {
   position: fixed;
@@ -182,20 +228,22 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 0.8rem;
   z-index: 1000;
 }
 
 .fabMainButton {
   width: 52px;
   height: 52px;
-  border-radius: 50%;
+  border-radius: 999px;
   border: none;
   background: var(--btn-primary-bg);
   color: var(--btn-primary-text);
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   font-size: 1.6rem;
   cursor: pointer;
   box-shadow: var(--card-shadow);
@@ -203,17 +251,19 @@
 
 .fabActions {
   background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
-  border-radius: 10px;
-  padding: 0.5rem 0.9rem;
-  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.18);
+  border-radius: 12px;
+  padding: 0.55rem 0.9rem;
+  box-shadow: var(--card-shadow);
+
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.35rem;
 
   opacity: 0;
   pointer-events: none;
-  transform: translateX(8px);
+  transform: translateY(8px);
   transition:
     opacity 0.15s ease,
     transform 0.15s ease;
@@ -222,14 +272,14 @@
 .fabContainer:hover .fabActions {
   opacity: 1;
   pointer-events: auto;
-  transform: translateX(0);
+  transform: translateY(0);
 }
 
 .fabActionButton {
   border: none;
   background: transparent;
   text-align: left;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   padding: 0.25rem 0;
   cursor: pointer;
   white-space: nowrap;
@@ -237,6 +287,7 @@
 }
 
 .fabActionButton:hover {
+  color: var(--link-hover);
   text-decoration: underline;
 }
 
@@ -249,8 +300,13 @@
     grid-template-columns: 1fr;
   }
 
-  .pageContent {
-    padding: 1.5rem;
+  .cardLastTrainingWide {
+    grid-column: span 1;
+  }
+
+  .headerRow {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .fabContainer {
