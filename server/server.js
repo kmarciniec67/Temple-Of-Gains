@@ -720,6 +720,53 @@ app.get("/api/user-settings", authenticateToken, async (req, res) => {
   }
 });
 
+// Endpoint do dodawania nowego pomiaru (POST)
+app.post("/api/measurements", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  // Pobieramy dane z formularza
+  const {
+    date,
+    body_weight,
+    body_fat_perc,
+    chest,
+    waist,
+    hips,
+    biceps,
+    thighs,
+  } = req.body;
+
+  try {
+    const query = `
+            INSERT INTO measurements 
+            (user_id, date, body_weight, body_fat_perc, chest, waist, hips, biceps, thighs) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+    // Domyślnie dzisiejsza data, jeśli użytkownik nie wybrał innej
+    const measurementDate = date || new Date();
+
+    // Wstawiamy NULL tam, gdzie użytkownik nic nie wpisał (puste stringi zamieniamy na null)
+    const val = (v) => (v === "" || v === undefined ? null : v);
+
+    await pool.query(query, [
+      userId,
+      measurementDate,
+      val(body_weight),
+      val(body_fat_perc),
+      val(chest),
+      val(waist),
+      val(hips),
+      val(biceps),
+      val(thighs),
+    ]);
+
+    res.status(201).json({ success: true, message: "Pomiar zapisany." });
+  } catch (err) {
+    console.error("Add Measurement Error:", err);
+    res.status(500).json({ error: "Błąd bazy danych." });
+  }
+});
+
 // Endpoint wylogowania
 app.post("/api/logout", (req, res) => {
   res.clearCookie("token", { httpOnly: true, sameSite: "strict" });
