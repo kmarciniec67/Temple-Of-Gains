@@ -1,25 +1,308 @@
-.PlansBackground {
-    display: flex;
-    width: 100%;
+/* src/pages/dashboard/plans.module.css */
+
+.plansPage {
+  display: flex;
+  flex-direction: column;
+  height: calc(
+    100vh - 80px
+  ); /* Dopasowanie do wysokości viewportu minus navbar */
+  overflow: hidden;
+  color: white;
+  font-family: "Inter", sans-serif;
 }
 
-.PlansContainer {
-    max-width: 900px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 2rem;
+.layoutContainer {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  padding: 20px;
+  gap: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
+/* --- LEWA KOLUMNA: LISTA --- */
+.listColumn {
+  flex: 0 0 380px;
+  display: flex;
+  flex-direction: column;
+  min-width: 300px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding-right: 20px;
+}
+
+.headerTitle {
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* Wyszukiwarka */
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-secondary, #1f1f1f); /* Fallback */
+  border: 1px solid var(--border-color, #333);
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.2s;
+}
+
+.searchWrapper:focus-within {
+  border-color: var(--accent-primary);
+}
+
+.searchIcon {
+  color: var(--text-secondary, #aaa);
+  margin-right: 10px;
+}
+
+.searchInput {
+  background: transparent;
+  border: none;
+  color: white;
+  width: 100%;
+  outline: none;
+  font-size: 1rem;
+}
+
+/* Lista Kafelków */
+.plansList {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 5px; /* miejsce na scrollbar */
+}
+
+/* Kafelek Planu */
 .planCard {
-    background-color: var(--bg-card-dashboard);
-    padding: 1.5rem;
-    border-radius: 10px;
-    box-shadow: var(--card-shadow);
-    color: var(--text-primary);
-    transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .planCard:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--card-shadow-hover);
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.activeCard {
+  background-color: rgba(
+    229,
+    9,
+    20,
+    0.15
+  ) !important; /* Przykład czerwonawego tła */
+  border-color: var(--accent-primary);
+}
+
+.cardIconBox {
+  width: 45px;
+  height: 45px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: var(--text-primary, #fff);
+}
+
+.cardContent {
+  flex: 1;
+  overflow: hidden;
+}
+
+.cardTitle {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardSubtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #aaa);
+}
+
+.noResults {
+  color: var(--text-secondary, #aaa);
+  font-style: italic;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* --- PRAWA KOLUMNA: SZCZEGÓŁY --- */
+.detailsColumn {
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Pusty stan */
+.emptyState {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary, #666);
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.3;
+}
+
+/* Nagłówek szczegółów */
+.detailsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.planTitleBig {
+  font-size: 2.2rem;
+  margin: 0 0 10px 0;
+  color: var(--accent-primary);
+}
+
+.planDescription {
+  font-size: 1rem;
+  color: #ddd;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.deleteButton {
+  background: transparent;
+  border: 1px solid #d32f2f;
+  color: #d32f2f;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.deleteButton:hover {
+  background: #d32f2f;
+  color: white;
+}
+
+/* Sekcja listy ćwiczeń */
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.exercisesGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.exerciseItem {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 4px solid var(--accent-primary);
+  transition: background 0.2s;
+}
+
+.exerciseItem:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.indexBadge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #333;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.85rem;
+  margin-right: 15px;
+}
+
+.exerciseInfo {
+  flex: 1;
+}
+
+.exerciseName {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.exercisePart {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #888);
+}
+
+.emptyExercises {
+  padding: 30px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  color: #888;
+  border: 1px dashed #444;
+}
+
+/* Responsywność */
+@media (max-width: 900px) {
+  .layoutContainer {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .listColumn {
+    flex: none;
+    width: 100%;
+    max-height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 20px;
+  }
+
+  .detailsColumn {
+    flex: none; /* Pozwala na naturalne rozszerzanie się treści */
+  }
 }
