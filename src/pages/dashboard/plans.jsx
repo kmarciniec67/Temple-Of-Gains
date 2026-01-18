@@ -73,11 +73,9 @@ const Plans = () => {
   return (
     <div className={styles.plansPage}>
       <div className={styles.layoutContainer}>
-        {/* --- LEWA KOLUMNA: Lista i Szukanie --- */}
         <div className={styles.listColumn}>
           <h1 className={styles.headerTitle}>Twoje Plany</h1>
 
-          {/* Wyszukiwarka */}
           <div className={styles.searchWrapper}>
             <FaSearch className={styles.searchIcon} />
             <input
@@ -89,7 +87,6 @@ const Plans = () => {
             />
           </div>
 
-          {/* Lista Kafelków */}
           <div className={styles.plansList}>
             {filteredPlans.length === 0 ? (
               <p className={styles.noResults}>
@@ -120,7 +117,6 @@ const Plans = () => {
           </div>
         </div>
 
-        {/* --- PRAWA KOLUMNA: Szczegóły --- */}
         <div className={styles.detailsColumn}>
           {selectedPlan ? (
             <>

@@ -3,8 +3,8 @@ import styles from "./measurement.module.css";
 import { useNavigate } from "react-router-dom";
 import useMeasurements from "../../hooks/useMeasurements";
 import WeightChart from "./components/WeightChart";
-
-// import { Link } from "react-router-dom";
+import useBmiData from "../../hooks/useBMIData";
+import BMIChart from "./components/BMIChart";
 
 // Fetchowanie z bazy danych z tabeli 'measurements' po zalogowaniu się
 const Measurement = () => {
@@ -19,6 +19,7 @@ const Measurement = () => {
 
   const [form, setForm] = useState({
     date: todayISO,
+    height: "",
     body_weight: "",
     body_fat_perc: "",
     chest: "",
@@ -38,12 +39,19 @@ const Measurement = () => {
     return dt.toLocaleDateString("pl-PL");
   };
 
+  const {
+    chartData: bmiData,
+    latest: bmiLatest,
+    status: bmiStatus,
+  } = useBmiData(measurements, formatDate);
+
   const openAddModal = () => {
     setMode("add");
     setSelectedId("");
     setFormError("");
     setForm({
       date: todayISO,
+      height: "",
       body_weight: "",
       body_fat_perc: "",
       chest: "",
@@ -66,6 +74,7 @@ const Measurement = () => {
         date: first.date
           ? new Date(first.date).toISOString().slice(0, 10)
           : todayISO,
+        height: first.height ?? "",
         body_weight: first.body_weight ?? "",
         body_fat_perc: first.body_fat_perc ?? "",
         chest: first.chest ?? "",
@@ -98,6 +107,7 @@ const Measurement = () => {
 
     setForm({
       date: m.date ? new Date(m.date).toISOString().slice(0, 10) : todayISO,
+      height: m.height ?? "",
       body_weight: m.body_weight ?? "",
       body_fat_perc: m.body_fat_perc ?? "",
       chest: m.chest ?? "",
@@ -169,9 +179,10 @@ const Measurement = () => {
 
       await refetch();
 
-      // reset formularza (opcjonalnie)
+      // reset formularza
       setForm({
         date: todayISO,
+        height: "",
         body_weight: "",
         body_fat_perc: "",
         chest: "",
@@ -258,6 +269,12 @@ const Measurement = () => {
 
           <WeightChart measurements={measurements} formatDate={formatDate} />
         </div>
+
+        <div className={styles.chartCard}>
+          <h2 className={styles.chartTitle}>Wykres BMI</h2>
+          <BMIChart chartData={bmiData} latest={bmiLatest} status={bmiStatus} />
+        </div>
+
         {!measurements.length ? (
           <p>Brak znalezionych pomiarów.</p>
         ) : (
@@ -266,6 +283,7 @@ const Measurement = () => {
               <thead>
                 <tr>
                   <th>Data</th>
+                  <th>Wzrost [cm]</th>
                   <th>Waga [kg]</th>
                   <th>Procent tkanki tłuszczowej [%]</th>
                   <th>Klatka piersiowa [cm]</th>
@@ -283,6 +301,9 @@ const Measurement = () => {
                       <span className={styles.cellValue}>
                         {formatDate(m.date)}
                       </span>
+                    </td>
+                    <td data-label="Wzrost [cm]">
+                      <span className={styles.cellValue}>{m.height ?? ""}</span>
                     </td>
                     <td data-label="Weight [kg]">
                       <span className={styles.cellValue}>
@@ -353,6 +374,17 @@ const Measurement = () => {
                 </label>
 
                 <div className={styles.grid}>
+                  <label>
+                    Wzrost [cm]
+                    <input
+                      type="number"
+                      step="0.1"
+                      name="height"
+                      value={form.height}
+                      onChange={handleChange}
+                    />
+                  </label>
+
                   <label>
                     Waga [kg]
                     <input

@@ -1,16 +1,183 @@
-/* SETTINGS PAGE */
-
+/* Settings page layout */
 .settingsBackground {
-  /* Previous (można zmienić)
   display: flex;
-  height: 100vh;
+  justify-content: center;
+  align-items: flex-start;
   width: 100%;
-  */
-  display: flex;
-  width: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .settingsContainer {
-  max-width: 800px;
+  width: min(900px, 100%);
   margin: 0 auto;
+}
+
+/* Card-like section */
+.settingsForm {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card-dashboard);
+  box-shadow: var(--card-shadow);
+}
+
+.sectionTitle {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* Inputs */
+.field {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.field label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.field input {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.field input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
+}
+
+/* Validation look */
+.inputError {
+  border-color: var(--danger, #ef4444) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
+}
+
+.hint {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* Buttons row */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.actions button {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  box-shadow: var(--card-shadow);
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.05s ease;
+}
+
+.actions button:hover {
+  background: var(--bg-hover);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.actions button:active {
+  transform: translateY(1px);
+}
+
+.actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Messages */
+.formError {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--text-primary);
+}
+
+.formSuccess {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--text-primary);
+}
+
+/* Export buttons */
+.exportRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.exportLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  box-shadow: var(--card-shadow);
+
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.05s ease;
+}
+
+.exportLink:hover {
+  background: var(--bg-hover);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.exportLink:active {
+  transform: translateY(1px);
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .settingsBackground {
+    padding: 16px;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+
+  .exportRow a {
+    width: 100%;
+  }
 }

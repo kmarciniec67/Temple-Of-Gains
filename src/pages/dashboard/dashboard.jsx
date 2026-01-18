@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom"; // IMPORTUJEMY useNavigate
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styles from "./Dashboard.module.css";
 import Navbar from "./components/Navbar";
 import * as fi from "react-icons/fi";
@@ -11,7 +11,7 @@ import useWorkoutStats from "../../hooks/useWorkoutStats";
 export default function Dashboard() {
   const { pathname } = useLocation();
   const isHome = pathname === "/dashboard";
-  const navigate = useNavigate(); // DODAJEMY HOOK NAWIGACJI
+  const navigate = useNavigate();
 
   const { workouts, loading, error } = useWorkoutsList({ limit: 3, offset: 0 }); // do treningow
   const { stats, loading: statsLoading, error: statsError } = useWorkoutStats(); // do statystyk
@@ -43,7 +43,6 @@ export default function Dashboard() {
     day: "numeric",
   });
 
-  // ==== FALLBACK HELPERS (żeby nie było undefined) ====
   const hasStats = !!stats && !statsLoading && !statsError;
 
   const safeText = (v, fallback = "Brak treningu") =>
@@ -54,14 +53,13 @@ export default function Dashboard() {
     return Number.isFinite(n) ? n : null;
   };
 
-  // ==== VALUES FOR UI ====
   const lastWorkout = hasStats ? stats.last_workout : null;
 
   const lastWorkoutLabel = lastWorkout
     ? `${safeText(lastWorkout.plan_name, "Trening")} — ${new Date(lastWorkout.date).toLocaleDateString("pl-PL")}`
     : "Brak treningu";
 
-  // treningi w tym tygodniu (tu właśnie miałeś undefined)
+  // treningi w tym tygodniu
   const weekWorkoutsCount = hasStats
     ? safeNumber(stats.week_workouts_count)
     : null;
@@ -117,8 +115,6 @@ export default function Dashboard() {
                 <fi.FiCalendar className={styles.calendarIcon} />
               </div>
             </div>
-
-            {/* tu Twoje karty/statystyki */}
 
             <div className={styles.statsContainer}>
               <div className={styles.statsRow}>
@@ -243,7 +239,6 @@ export default function Dashboard() {
                 </section>
               </div>
 
-              {/* FAB – przycisk plusa i akcje */}
               <div className={styles.fabContainer}>
                 <div className={styles.fabActions}>
                   <button className={styles.fabActionButton}>

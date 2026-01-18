@@ -13,25 +13,24 @@ import Exercises from "./pages/dashboard/exercises";
 import History from "./pages/dashboard/history";
 import WorkoutDetails from "./pages/dashboard/WorkoutDetails";
 import Settings from "./pages/dashboard/settings";
+import Calculators from "./pages/dashboard/Calculators";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* publiczne */}
         <Route path="/" element={<Start_Page />} />
         <Route path="/login" element={<Login_Page />} />
         <Route path="/register" element={<Register_Page />} />
 
-        {/* dashboard i zagniezdzone */}
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<div />} />
-          {/* UWAGA: bez wiodącego "/" */}
           <Route path="measurement" element={<Measurement />} />
           <Route path="plans" element={<Plans />} />
           <Route path="exercises" element={<Exercises />} />
           <Route path="history" element={<History />} />
           <Route path="history/:id" element={<WorkoutDetails />} />
+          <Route path="calculators" element={<Calculators />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
