@@ -832,6 +832,31 @@ app.post("/api/workouts", authenticateToken, async (req, res) => {
       res.status(500).json({ error: "Database error" });
     }
   });
+
+// add workout set endpoint
+app.post("/api/workouts/:id/sets", authenticateToken, async (req, res) => {
+    const workoutId = Number(req.params.id);
+    const { exercise_id, set_number, reps, weight } = req.body;
+  
+    if (!exercise_id || !set_number) {
+      return res.status(400).json({ error: "Brak danych serii" });
+    }
+  
+    try {
+      await pool.query(
+        `INSERT INTO workoutdetails
+         (workout_id, exercise_id, set_number, reps, weight)
+         VALUES (?, ?, ?, ?, ?)`,
+        [workoutId, exercise_id, set_number, reps, weight]
+      );
+  
+      res.status(201).json({ success: true });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  });
+  
   
 
 // Endpoint zwraca workouts details
