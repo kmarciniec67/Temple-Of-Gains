@@ -37,7 +37,12 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
-app.use(cors()); // Pozwalamy na zapytania z zewnątrz
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+); // Pozwalamy na zapytania z zewnątrz
 app.use(cookieParser());
 
 // Konfiguracja bazy danych z pliku .env
@@ -66,6 +71,20 @@ function authenticateToken(req, res, next) {
     console.log("Middleware: Zidentyfikowano użytkownika:", user);
     next();
   });
+}
+
+function toCSV(rows) {
+  if (!rows || rows.length === 0) return "no_data\n";
+  const headers = Object.keys(rows[0]);
+  const esc = (v) => {
+    if (v === null || v === undefined) return "";
+    const s = String(v).replaceAll('"', '""');
+    return `"${s}"`;
+  };
+  return [
+    headers.join(","),
+    ...rows.map((r) => headers.map((h) => esc(r[h])).join(",")),
+  ].join("\n");
 }
 
 // API test
@@ -278,6 +297,7 @@ app.get("/api/measurements", authenticateToken, async (req, res) => {
 app.post("/api/measurements", authenticateToken, async (req, res) => {
   const {
     date,
+    height,
     body_weight,
     body_fat_perc,
     chest,
@@ -293,6 +313,12 @@ app.post("/api/measurements", authenticateToken, async (req, res) => {
   if (!date || !body_weight) {
     return res.status(400).json({ error: "Data i waga ciała są wymagane." });
   }
+
+  const toNumOrNull = (v) => {
+    if (v === "" || v === null || v === undefined) return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
 
   const isISODate = /^\d{4}-\d{2}-\d{2}$/.test(date);
   if (!isISODate) {
@@ -317,21 +343,44 @@ app.post("/api/measurements", authenticateToken, async (req, res) => {
       .json({ error: "Data pomiaru nie może być z przyszłości." });
   }
 
+  let finalHeight = toNumOrNull(height);
+
+  if (finalHeight === null) {
+    const [[last]] = await pool.query(
+      `
+      SELECT height
+      FROM measurements
+      WHERE user_id = ? AND height IS NOT NULL
+      ORDER BY date DESC, id DESC
+      LIMIT 1
+      `,
+      [userId],
+    );
+    finalHeight = last?.height ?? null;
+  }
+
+  if (finalHeight === null) {
+    return res
+      .status(400)
+      .json({ error: "Wzrost jest wymagany przy pierwszym pomiarze." });
+  }
+
   try {
     const [result] = await pool.query(
       `INSERT INTO measurements 
-            (user_id, date, body_weight, body_fat_perc, chest, waist, hips, biceps, thighs) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            (user_id, date, height, body_weight, body_fat_perc, chest, waist, hips, biceps, thighs) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         userId,
         date,
-        body_weight,
-        body_fat_perc || null,
-        chest || null,
-        waist || null,
-        hips || null,
-        biceps || null,
-        thighs || null,
+        finalHeight,
+        toNumOrNull(body_weight),
+        toNumOrNull(body_fat_perc),
+        toNumOrNull(chest),
+        toNumOrNull(waist),
+        toNumOrNull(hips),
+        toNumOrNull(biceps),
+        toNumOrNull(thighs),
       ],
     );
 
@@ -380,6 +429,7 @@ app.put("/api/measurements/:id", authenticateToken, async (req, res) => {
 
   const {
     date,
+    height,
     body_weight,
     body_fat_perc,
     chest,
@@ -429,10 +479,11 @@ app.put("/api/measurements/:id", authenticateToken, async (req, res) => {
   try {
     const [result] = await pool.query(
       `UPDATE measurements
-       SET date = ?, body_weight = ?, body_fat_perc = ?, chest = ?, waist = ?, hips = ?, biceps = ?, thighs = ?
+       SET date = ?,  height = ?, body_weight = ?, body_fat_perc = ?, chest = ?, waist = ?, hips = ?, biceps = ?, thighs = ?
        WHERE id = ? AND user_id = ?`,
       [
         date,
+        toNumOrNull(height),
         toNumOrNull(body_weight),
         toNumOrNull(body_fat_perc),
         toNumOrNull(chest),
@@ -894,50 +945,176 @@ app.get("/api/user-settings", authenticateToken, async (req, res) => {
   }
 });
 
-// Endpoint do dodawania nowego pomiaru (POST)
-app.post("/api/measurements", authenticateToken, async (req, res) => {
+// Zmiana nazwy użytkownika
+app.put("/api/user/username", authenticateToken, async (req, res) => {
   const userId = req.user.id;
-  // Pobieramy dane z formularza
-  const {
-    date,
-    body_weight,
-    body_fat_perc,
-    chest,
-    waist,
-    hips,
-    biceps,
-    thighs,
-  } = req.body;
+  const { username } = req.body;
+
+  if (!username || String(username).trim().length < 3) {
+    return res
+      .status(400)
+      .json({ error: "Nazwa użytkownika musi mieć min. 3 znaki." });
+  }
 
   try {
-    const query = `
-            INSERT INTO measurements 
-            (user_id, date, body_weight, body_fat_perc, chest, waist, hips, biceps, thighs) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
+    // sprawdź czy zajęta
+    const [rows] = await pool.query(
+      "SELECT id FROM users WHERE username = ? AND id <> ?",
+      [username, userId],
+    );
 
-    // Domyślnie dzisiejsza data, jeśli użytkownik nie wybrał innej
-    const measurementDate = date || new Date();
+    if (rows.length > 0) {
+      return res
+        .status(409)
+        .json({ error: "Nazwa użytkownika jest już zajęta." });
+    }
 
-    // Wstawiamy NULL tam, gdzie użytkownik nic nie wpisał (puste stringi zamieniamy na null)
-    const val = (v) => (v === "" || v === undefined ? null : v);
-
-    await pool.query(query, [
+    await pool.query("UPDATE users SET username = ? WHERE id = ?", [
+      username,
       userId,
-      measurementDate,
-      val(body_weight),
-      val(body_fat_perc),
-      val(chest),
-      val(waist),
-      val(hips),
-      val(biceps),
-      val(thighs),
     ]);
 
-    res.status(201).json({ success: true, message: "Pomiar zapisany." });
+    const token = jwt.sign({ id: userId, username }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 3600000,
+    });
+
+    return res.json({ success: true, username });
   } catch (err) {
-    console.error("Add Measurement Error:", err);
-    res.status(500).json({ error: "Błąd bazy danych." });
+    console.error("Update username error:", err);
+    return res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.get("/api/export/measurements.csv", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const [rows] = await pool.query(
+      `SELECT date, height, body_weight, body_fat_perc, chest, waist, hips, biceps, thighs
+       FROM measurements
+       WHERE user_id = ?
+       ORDER BY date ASC`,
+      [userId],
+    );
+
+    const csv = toCSV(rows);
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="measurements.csv"',
+    );
+    return res.send("\uFEFF" + csv);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.get("/api/export/workouts.csv", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const [rows] = await pool.query(
+      `SELECT w.id, w.date, wp.name AS plan_name
+       FROM workouts w
+       LEFT JOIN workoutplans wp ON wp.id = w.plan_id
+       WHERE w.user_id = ?
+       ORDER BY w.date ASC`,
+      [userId],
+    );
+
+    const csv = toCSV(rows);
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", 'attachment; filename="workouts.csv"');
+    return res.send("\uFEFF" + csv);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.delete("/api/user", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  const { password } = req.body;
+
+  if (!password) return res.status(400).json({ error: "Podaj hasło." });
+
+  try {
+    const [[user]] = await pool.query(
+      "SELECT password_hash FROM users WHERE id = ?",
+      [userId],
+    );
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const hash = crypto.createHash("sha256").update(password).digest("hex");
+    if (hash !== user.password_hash) {
+      return res.status(401).json({ error: "Nieprawidłowe hasło." });
+    }
+
+    await pool.query("DELETE FROM users WHERE id = ?", [userId]);
+
+    res.clearCookie("token", { httpOnly: true, sameSite: "strict" });
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("Delete user error:", err);
+    return res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Zmiana hasła użytkownika (w ustawieniach)
+app.put("/api/user-settings/password", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: "Uzupełnij obecne i nowe hasło." });
+  }
+
+  // możesz tu wkleić swój regex "strongPasswordRegex" jak w rejestracji
+  if (newPassword.length < 8) {
+    return res
+      .status(400)
+      .json({ error: "Nowe hasło musi mieć min. 8 znaków." });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      "SELECT password_hash FROM users WHERE id = ? LIMIT 1",
+      [userId],
+    );
+    if (rows.length === 0)
+      return res.status(404).json({ error: "User not found" });
+
+    const currentHash = crypto
+      .createHash("sha256")
+      .update(currentPassword)
+      .digest("hex");
+    if (currentHash !== rows[0].password_hash) {
+      // TO NIE JEST 401. To zwykły błąd walidacji.
+      return res
+        .status(400)
+        .json({ error: "Obecne hasło jest nieprawidłowe." });
+    }
+
+    const newHash = crypto
+      .createHash("sha256")
+      .update(newPassword)
+      .digest("hex");
+    await pool.query("UPDATE users SET password_hash = ? WHERE id = ?", [
+      newHash,
+      userId,
+    ]);
+
+    // NIE ruszaj cookie token – nie wylogowuj
+    return res.json({ success: true, message: "Hasło zostało zmienione." });
+  } catch (err) {
+    console.error("Change password error:", err);
+    return res.status(500).json({ error: "Database error" });
   }
 });
 

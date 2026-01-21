@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "./exercises.module.css";
 import { useNavigate } from "react-router-dom";
-import { FaSearch } from "react-icons/fa"; // Upewnij się, że masz react-icons
+import { FaSearch } from "react-icons/fa";
 
 const Exercises = () => {
   const [exercises, setExercises] = useState([]);
@@ -14,7 +14,6 @@ const Exercises = () => {
 
   const navigate = useNavigate();
 
-  // Lista kategorii zgodna z Twoim ENUM w bazie
   const categories = [
     "All",
     "Chest",
@@ -49,7 +48,6 @@ const Exercises = () => {
     fetchExercises();
   }, [navigate]);
 
-  // LOGIKA FILTROWANIA
   const filteredExercises = exercises.filter((ex) => {
     const matchesSearch = ex.name
       .toLowerCase()
@@ -70,13 +68,10 @@ const Exercises = () => {
   return (
     <div className={styles.exercisesPage}>
       <div className={styles.layoutContainer}>
-        {/* --- LEWA KOLUMNA: Wyszukiwanie, Filtry i Lista --- */}
         <div className={styles.listColumn}>
           <h1 className={styles.headerTitle}>Baza Ćwiczeń</h1>
 
-          {/* Sekcja Szukania i Filtrów */}
           <div className={styles.filterSection}>
-            {/* Wyszukiwarka */}
             <div className={styles.searchWrapper}>
               <FaSearch className={styles.searchIcon} />
               <input
@@ -88,7 +83,6 @@ const Exercises = () => {
               />
             </div>
 
-            {/* Filtry Kategorii */}
             <div className={styles.categoriesContainer}>
               {categories.map((cat) => (
                 <button
@@ -102,7 +96,6 @@ const Exercises = () => {
             </div>
           </div>
 
-          {/* Lista Kafelków */}
           <div className={styles.gridContainer}>
             {filteredExercises.length > 0 ? (
               filteredExercises.map((ex) => (
@@ -110,7 +103,6 @@ const Exercises = () => {
                   key={ex.id}
                   onClick={() => {
                     setSelectedExercise(ex);
-                    // Na mobile warto przewinąć, na desktopie nie trzeba
                     if (window.innerWidth < 900)
                       window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
@@ -141,7 +133,6 @@ const Exercises = () => {
           </div>
         </div>
 
-        {/* --- PRAWA KOLUMNA: Szczegóły (bez zmian w logice) --- */}
         <div className={styles.detailsColumn}>
           {selectedExercise ? (
             <div className={styles.detailsPanel}>

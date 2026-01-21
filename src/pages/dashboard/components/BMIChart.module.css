@@ -1,0 +1,77 @@
+.bmiSection {
+  width: 100%;
+}
+
+.bmiTitle {
+  margin: 0 0 12px 0;
+}
+
+.bmiRow {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.chartWrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 280px;
+}
+
+.card {
+  flex: 0 0 320px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card-dashboard);
+  box-shadow: var(--card-shadow);
+  padding: 14px;
+}
+
+.cardTitle {
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.cardValue {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.cardStatus {
+  margin-top: 10px;
+  font-weight: 700;
+}
+
+.cardHint {
+  margin-top: 10px;
+  opacity: 0.85;
+  font-size: 13px;
+}
+
+.ok {
+  color: var(--success, #16a34a);
+}
+.warn {
+  color: var(--warning, #f59e0b);
+}
+.bad {
+  color: var(--danger, #ef4444);
+}
+
+/* MOBILE */
+@media (max-width: 600px) {
+  .bmiRow {
+    flex-direction: column;
+  }
+
+  .chartWrap {
+    width: 100%;
+    min-height: 260px;
+  }
+
+  .card {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+}

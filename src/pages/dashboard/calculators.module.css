@@ -1,0 +1,150 @@
+.page {
+  width: 100%;
+  max-width: 62.5rem;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.title {
+  margin: 0 0 14px 0;
+}
+
+.section {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card-dashboard);
+}
+
+.card {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card-dashboard);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.h2 {
+  margin: 0;
+}
+
+.sub {
+  opacity: 0.8;
+  font-size: 13px;
+}
+
+.grid2 {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.label {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card-dashboard);
+  color: var(--text-primary);
+  outline: none;
+}
+
+select.input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  padding-right: 40px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%),
+    linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 55%,
+    calc(100% - 12px) 55%;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+}
+
+.input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.18);
+}
+
+.totalBox {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.totalLabel {
+  opacity: 0.8;
+  font-size: 13px;
+}
+
+.totalValue {
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.resultsRow {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.card {
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+  background: var(--bg-card-dashboard, rgba(255, 255, 255, 0.03));
+  box-shadow: var(--card-shadow);
+  padding: 14px;
+}
+
+.cardTitle {
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.cardValue {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.cardHint {
+  margin-top: 10px;
+  opacity: 0.85;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 16px;
+  }
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  .resultsRow {
+    grid-template-columns: 1fr;
+  }
+}
