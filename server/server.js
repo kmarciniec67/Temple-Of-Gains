@@ -806,7 +806,80 @@ app.get("/api/history", authenticateToken, async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Database error" });
   }
-});
+});  
+
+// add Workout endpoint
+app.post("/api/workouts", authenticateToken, async (req, res) => {
+    const userId = req.user.id;
+    const { plan_id, date } = req.body;
+  
+    if (!date) {
+      return res.status(400).json({ error: "Data jest wymagana" });
+    }
+  
+    try {
+      const [result] = await pool.query(
+        "INSERT INTO workouts (user_id, plan_id, date) VALUES (?, ?, ?)",
+        [userId, plan_id ?? null, date]
+      );
+  
+      res.status(201).json({
+        success: true,
+        workout_id: result.insertId,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  });
+
+// add workout set endpoint
+app.post("/api/workouts/:id/sets", authenticateToken, async (req, res) => {
+    const workoutId = Number(req.params.id);
+    const { exercise_id, set_number, reps, weight } = req.body;
+  
+    if (!exercise_id || !set_number) {
+      return res.status(400).json({ error: "Brak danych serii" });
+    }
+  
+    try {
+      await pool.query(
+        `INSERT INTO workoutdetails
+         (workout_id, exercise_id, set_number, reps, weight)
+         VALUES (?, ?, ?, ?, ?)`,
+        [workoutId, exercise_id, set_number, reps, weight]
+      );
+  
+      res.status(201).json({ success: true });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  });
+
+  app.get("/api/workouts/:id/plan", authenticateToken, async (req, res) => {
+    const workoutId = Number(req.params.id);
+    if (!Number.isFinite(workoutId)) return res.status(400).json({ error: "Invalid workout id" });
+  
+    try {
+      // Pobranie planu ćwiczeń przypisanego do tego treningu
+      const [rows] = await pool.query(
+        `SELECT e.id, e.name
+         FROM exercises e
+         JOIN planexercises pe ON e.id = pe.exercise_id
+         JOIN workouts w ON w.plan_id = pe.plan_id
+         WHERE w.id = ?`,
+        [workoutId]
+      );
+  
+      res.json(rows); // Zwracamy tablicę ćwiczeń
+    } catch (err) {
+      console.error("Błąd pobierania planu treningu:", err);
+      res.status(500).json({ error: "Database error" });
+    }
+  });
+  
+  
 
 // Endpoint zwraca workouts details
 app.get("/api/workouts", authenticateToken, async (req, res) => {
@@ -923,6 +996,45 @@ app.get("/api/workouts/:id", authenticateToken, async (req, res) => {
     res.json({ ...workout, summary, exercises });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Endpoint zakończenia treningu (podsumowanie)
+app.post("/api/workouts/:id/finish", authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  const workoutId = Number(req.params.id);
+
+  try {
+    // Pobierz wszystkie serie tego treningu
+    const [details] = await pool.query(
+      `SELECT wd.reps, wd.weight
+       FROM workoutdetails wd
+       JOIN workouts w ON w.id = wd.workout_id
+       WHERE w.id = ? AND w.user_id = ?`,
+      [workoutId, userId]
+    );
+
+    if (!details.length) {
+      return res.status(400).json({ error: "Brak dodanych serii" });
+    }
+
+    const totalVolume = details.reduce(
+      (acc, s) => acc + (Number(s.reps) || 0) * (Number(s.weight) || 0),
+      0
+    );
+    const exercisesCount = new Set(details.map((s) => s.exercise_id)).size;
+
+    res.json({
+      success: true,
+      workout_summary: {
+        workout_id: workoutId,
+        exercises_count: exercisesCount,
+        total_volume: totalVolume,
+      },
+    });
+  } catch (err) {
+    console.error("Finish workout error:", err);
     res.status(500).json({ error: "Database error" });
   }
 });

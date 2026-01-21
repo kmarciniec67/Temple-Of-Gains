@@ -1,0 +1,162 @@
+.pageContent {
+  padding: 0 2rem 2.5rem;
+  margin-top: calc(var(--navbar-height, 4rem) + 1.5rem);
+  display: flex;
+  justify-content: center;
+}
+
+.cardCentered {
+  width: 100%;
+  max-width: 540px;
+  background: var(--bg-card-dashboard);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 1.25rem;
+  box-shadow: var(--card-shadow);
+}
+
+.cardTitle {
+  margin: 0 0 1.25rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.searchBox {
+  position: relative;
+  margin-top: 1rem;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.searchResults {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.searchItem {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.searchItem:hover {
+  background: var(--bg-hover);
+}
+
+.planBox {
+  margin-top: 1.2rem;
+}
+
+.planExercises {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.planExerciseButton {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.planExerciseButton:hover {
+  background: var(--bg-hover);
+}
+
+.planExerciseButton.active {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: transparent;
+}
+
+.setForm {
+  margin-top: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.exerciseName {
+  font-weight: 750;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.setRow {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.primaryButton {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-weight: 700;
+  box-shadow: var(--card-shadow);
+}
+
+.primaryButton:hover {
+  background: var(--bg-hover);
+}
+
+.addedSets {
+  margin-top: 1.6rem;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 1rem;
+}
+
+.setItem {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.setExercise {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.setDetails {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.finishButton {
+  margin-top: 1.6rem;
+  width: 100%;
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-weight: 800;
+  cursor: pointer;
+}

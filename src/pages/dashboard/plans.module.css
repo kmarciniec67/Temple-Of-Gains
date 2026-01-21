@@ -11,6 +11,32 @@
   font-family: "Inter", sans-serif;
 }
 
+.listHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.createButton {
+  appearance: none;
+  border: none;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: var(--card-shadow);
+}
+
+.createButton:hover {
+  opacity: 0.92;
+}
+
+
 .layoutContainer {
   flex: 1;
   display: flex;
