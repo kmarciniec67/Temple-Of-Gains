@@ -1,168 +1,162 @@
 .pageContent {
-    padding: 0 2rem 2.5rem;
-    margin-top: calc(var(--navbar-height, 4rem) + 1.5rem);
-  
-    display: flex;
-    justify-content: center;
-  }
-  
-  .cardCentered {
-    width: 100%;
-    max-width: 540px;
-  
-    background: var(--bg-card-dashboard);
-    border: 1px solid var(--border-subtle);
-    border-radius: 14px;
-    padding: 1.25rem;
-    box-shadow: var(--card-shadow);
-  }
-  
-  .cardTitle {
-    margin: 0 0 1.25rem;
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    text-align: center;
-  }
-  
-  .searchBox {
-    position: relative;
-  }
-  
-  .input {
-    width: 100%;
-    box-sizing: border-box; 
-    padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid var(--border-subtle);
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    font-size: 0.95rem;
-  }
-  
-  
-  .input:focus {
-    outline: none;
-    border-color: var(--accent-color);
-  }
-  
-  .searchResults {
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    right: 0;
-  
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-subtle);
-    border-radius: 12px;
-    overflow: hidden;
-    z-index: 10;
-  }
-  
-  .searchItem {
-    width: 100%;
-    text-align: left;
-    padding: 0.55rem 0.75rem;
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    cursor: pointer;
-    font-size: 0.9rem;
-  }
-  
-  .searchItem:hover {
-    background: var(--bg-hover);
-  }
-  
-  .setForm {
-    margin-top: 1.4rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-  
-  .exerciseName {
-    font-size: 1rem;
-    font-weight: 750;
-    color: var(--text-primary);
-  }
-  
-  .setRow {
-    display: flex;
-    gap: 0.75rem;
-  }
-  
-  .primaryButton {
-    appearance: none;
-    border: 1px solid var(--border-subtle);
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    padding: 10px 14px;
-    border-radius: 12px;
-    font-weight: 750;
-    font-size: 14px;
-    box-shadow: var(--card-shadow);
-    cursor: pointer;
-  }
-  
-  .primaryButton:hover {
-    background: var(--bg-hover);
-  }
-  
-  .addedSets {
-    margin-top: 1.6rem;
-    border-top: 1px solid var(--border-subtle);
-    padding-top: 1rem;
-  }
-  
-  .sectionTitle {
-    margin: 0 0 0.6rem;
-    font-size: 0.95rem;
-    font-weight: 750;
-    color: var(--text-secondary);
-  }
-  
-  .setItem {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    padding: 0.45rem 0;
-    border-bottom: 1px solid var(--border-subtle);
-  }
-  
-  .setItem:last-child {
-    border-bottom: none;
-  }
-  
-  .setExercise {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--text-primary);
-  }
-  
-  .setDetails {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-  }
-  
-  .finishButton {
-    margin-top: 1.6rem;
-    width: 100%;
-  
-    appearance: none;
-    border: none;
-    background: var(--btn-primary-bg);
-    color: var(--btn-primary-text);
-  
-    padding: 12px 14px;
-    border-radius: 14px;
-    font-weight: 800;
-    font-size: 15px;
-    cursor: pointer;
-    box-shadow: var(--card-shadow);
-  }
-  
-  .finishButton:hover {
-    opacity: 0.92;
-  }
-  
+  padding: 0 2rem 2.5rem;
+  margin-top: calc(var(--navbar-height, 4rem) + 1.5rem);
+  display: flex;
+  justify-content: center;
+}
+
+.cardCentered {
+  width: 100%;
+  max-width: 540px;
+  background: var(--bg-card-dashboard);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 1.25rem;
+  box-shadow: var(--card-shadow);
+}
+
+.cardTitle {
+  margin: 0 0 1.25rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.searchBox {
+  position: relative;
+  margin-top: 1rem;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.searchResults {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.searchItem {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.searchItem:hover {
+  background: var(--bg-hover);
+}
+
+.planBox {
+  margin-top: 1.2rem;
+}
+
+.planExercises {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.planExerciseButton {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.planExerciseButton:hover {
+  background: var(--bg-hover);
+}
+
+.planExerciseButton.active {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: transparent;
+}
+
+.setForm {
+  margin-top: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.exerciseName {
+  font-weight: 750;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.setRow {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.primaryButton {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-weight: 700;
+  box-shadow: var(--card-shadow);
+}
+
+.primaryButton:hover {
+  background: var(--bg-hover);
+}
+
+.addedSets {
+  margin-top: 1.6rem;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 1rem;
+}
+
+.setItem {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.setExercise {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.setDetails {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.finishButton {
+  margin-top: 1.6rem;
+  width: 100%;
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-weight: 800;
+  cursor: pointer;
+}
