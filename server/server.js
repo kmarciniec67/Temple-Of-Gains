@@ -808,6 +808,32 @@ app.get("/api/history", authenticateToken, async (req, res) => {
   }
 });
 
+// add Workout endpoint
+app.post("/api/workouts", authenticateToken, async (req, res) => {
+    const userId = req.user.id;
+    const { plan_id, date } = req.body;
+  
+    if (!date) {
+      return res.status(400).json({ error: "Data jest wymagana" });
+    }
+  
+    try {
+      const [result] = await pool.query(
+        "INSERT INTO workouts (user_id, plan_id, date) VALUES (?, ?, ?)",
+        [userId, plan_id ?? null, date]
+      );
+  
+      res.status(201).json({
+        success: true,
+        workout_id: result.insertId,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  });
+  
+
 // Endpoint zwraca workouts details
 app.get("/api/workouts", authenticateToken, async (req, res) => {
   const userId = req.user.id;
