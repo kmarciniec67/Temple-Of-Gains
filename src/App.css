@@ -497,6 +497,12 @@ html,
   .footerContent {
     grid-template-columns: 1fr;
   }
+
+  .loginLogo {
+    font-size: 1.5rem;
+    max-width: 100px;
+    max-height: 50px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -519,6 +525,11 @@ html,
   .landingButton {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
+  }
+
+  .loginLogo {
+    font-size: 1.5rem;
+    max-width: 100px;
   }
 }
 
@@ -544,6 +555,13 @@ html,
   padding-bottom: 5vh;
 }
 
+.logoContainer {
+  margin-bottom: 20px;
+  width: 70%;
+  display: flex;
+  justify-content: center;
+}
+
 .logoLink {
   text-decoration: none;
   display: inline-block;
@@ -556,12 +574,22 @@ html,
   color: inherit;
 }
 
+.loginLogoLanding {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 2rem;
+  padding: 5px;
+  margin-bottom: 5px;
+  max-width: 200px;
+}
+
 .loginLogo {
   margin: 0;
   color: var(--text-primary);
   font-size: 2rem;
   padding: 5px;
   margin-bottom: 5px;
+  max-width: 400px;
 }
 
 .loginBox {
