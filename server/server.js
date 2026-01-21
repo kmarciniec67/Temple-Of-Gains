@@ -806,7 +806,7 @@ app.get("/api/history", authenticateToken, async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Database error" });
   }
-});
+});  
 
 // add Workout endpoint
 app.post("/api/workouts", authenticateToken, async (req, res) => {
@@ -856,8 +856,6 @@ app.post("/api/workouts/:id/sets", authenticateToken, async (req, res) => {
       res.status(500).json({ error: "Database error" });
     }
   });
-  
-  
 
 // Endpoint zwraca workouts details
 app.get("/api/workouts", authenticateToken, async (req, res) => {
