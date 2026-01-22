@@ -717,32 +717,6 @@ app.get("/api/exercises", authenticateToken, async (req, res) => {
   }
 });
 
-// Endpoint dodający nowe ćwiczenia
-app.post("/api/exercises", authenticateToken, async (req, res) => {
-  const { name, description, body_part, video_url } = req.body;
-
-  // Walidacja
-  if (!name || !body_part) {
-    return res
-      .status(400)
-      .json({ error: "Nazwa i partia mięśniowa są wymagane." });
-  }
-
-  try {
-    const [result] = await pool.query(
-      "INSERT INTO exercises (name, description, body_part, video_url) VALUES (?, ?, ?, ?)",
-      [name, description, body_part, video_url],
-    );
-    res.status(201).json({
-      success: true,
-      id: result.insertId,
-      message: "Dodano ćwiczenie.",
-    });
-  } catch (err) {
-    console.error("Add Exercise Error:", err);
-    res.status(500).json({ error: "Błąd bazy danych." });
-  }
-});
 // Endpoint usuwanie ćwiczen (DELETE)
 app.delete("/api/exercises/:id", authenticateToken, async (req, res) => {
   const exerciseId = req.params.id;
@@ -1008,7 +982,7 @@ app.post("/api/workouts/:id/finish", authenticateToken, async (req, res) => {
   try {
     // Pobierz wszystkie serie tego treningu
     const [details] = await pool.query(
-      `SELECT wd.reps, wd.weight
+      `SELECT wd.reps, wd.weight, wd.exercise_id
        FROM workoutdetails wd
        JOIN workouts w ON w.id = wd.workout_id
        WHERE w.id = ? AND w.user_id = ?`,

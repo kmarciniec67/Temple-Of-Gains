@@ -13,8 +13,8 @@ export default function Dashboard() {
   const isHome = pathname === "/dashboard";
   const navigate = useNavigate();
 
-  const { workouts, loading, error } = useWorkoutsList({ limit: 3, offset: 0 }); // do treningow
-  const { stats, loading: statsLoading, error: statsError } = useWorkoutStats(); // do statystyk
+  const { workouts, loading, error } = useWorkoutsList({ limit: 3, offset: 0 });
+  const { stats, loading: statsLoading, error: statsError } = useWorkoutStats();
 
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -22,19 +22,15 @@ export default function Dashboard() {
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (!userData) {
-      console.log("Dashboard: Brak danych usera, przekierowanie do logowania.");
       navigate("/login");
       return;
     }
     const parsed = JSON.parse(userData);
     setUsername(parsed.username);
-
     setIsLoading(false);
   }, [navigate]);
 
-  if (isLoading) {
-    return null;
-  }
+  if (isLoading) return null;
 
   const today = new Date().toLocaleDateString("pl-PL", {
     weekday: "long",
@@ -56,29 +52,29 @@ export default function Dashboard() {
   const lastWorkout = hasStats ? stats.last_workout : null;
 
   const lastWorkoutLabel = lastWorkout
-    ? `${safeText(lastWorkout.plan_name, "Trening")} — ${new Date(lastWorkout.date).toLocaleDateString("pl-PL")}`
+    ? `${safeText(lastWorkout.plan_name, "Trening")} — ${new Date(
+        lastWorkout.date,
+      ).toLocaleDateString("pl-PL")}`
     : "Brak treningu";
 
-  // treningi w tym tygodniu
-  const weekWorkoutsCount = hasStats
-    ? safeNumber(stats.week_workouts_count)
-    : null;
-
-  const weekWorkoutsLabel =
-    weekWorkoutsCount === null ? "Brak treningu" : String(weekWorkoutsCount);
-
-  // średni tonaż z ostatnich 7 dni
-  const last7dWorkoutsCount = hasStats
+    const weekWorkoutsCount = hasStats
     ? safeNumber(stats.last7d_workouts_count)
     : null;
 
-  const last7dAvgVolume = hasStats ? safeNumber(stats.last7d_avg_volume) : null;
+  const weekExercisesCount = hasStats
+    ? safeNumber(stats.week_exercises_count)
+    : null;
+
+  const weekWorkoutsLabel =
+    weekWorkoutsCount === null ? "Brak" : String(weekWorkoutsCount);
+
+  const last7dAvgVolume = hasStats
+    ? safeNumber(stats.last7d_avg_volume)
+    : null;
 
   const last7dAvgLabel =
-    last7dWorkoutsCount === null ||
-    last7dWorkoutsCount === 0 ||
     last7dAvgVolume === null
-      ? "Brak treningu"
+      ? "Brak"
       : `${Math.round(last7dAvgVolume).toLocaleString("pl-PL")} kg`;
 
   const lastWorkoutDaysAgo = lastWorkout
@@ -105,7 +101,7 @@ export default function Dashboard() {
             <div className={styles.headerRow}>
               <div>
                 <h1 className={styles.greetingHeader}>
-                  Witaj, {username ? username : "użytkowniku"}!
+                  Witaj, {username || "użytkowniku"}!
                 </h1>
                 <p className={styles.greeting}>{headerSubtitle}</p>
               </div>
@@ -152,7 +148,7 @@ export default function Dashboard() {
                   <FaIcons.FaDumbbell className={styles.statIcon} />
                   <div>
                     <div className={styles.statLabel}>
-                      Średni tonaż na trening (ostatnie 7 dni)
+                      Średni tonaż (7 dni)
                     </div>
                     <div className={styles.statValue}>
                       {statsLoading
@@ -168,9 +164,7 @@ export default function Dashboard() {
               <div className={styles.mainGrid}>
                 <section className={styles.card}>
                   <h2 className={styles.cardTitle}>Masa ciała</h2>
-                  <div className={styles.chartPlaceholder}>
-                    <WeightChartFromApi />
-                  </div>
+                  <WeightChartFromApi />
                 </section>
 
                 <section
@@ -203,7 +197,13 @@ export default function Dashboard() {
 
                       {!loading && !error && workouts.length === 0 && (
                         <tr>
-                          <td colSpan={4}>Brak treningów</td>
+                          <td colSpan={4}>
+                            W tym tygodniu wykonano{" "}
+                            <strong>
+                              {weekExercisesCount ?? 0}
+                            </strong>{" "}
+                            ćwiczeń
+                          </td>
                         </tr>
                       )}
 
@@ -218,7 +218,7 @@ export default function Dashboard() {
                             <td>
                               {new Date(w.date).toLocaleDateString("pl-PL")}
                             </td>
-                            <td>{w.plan_name ?? `Plan ID: ${w.plan_id}`}</td>
+                            <td>{w.plan_name ?? `Plan ${w.plan_id}`}</td>
                             <td>{w.exercises_count ?? 0}</td>
                             <td>
                               {Math.round(w.total_volume ?? 0).toLocaleString(
@@ -230,6 +230,7 @@ export default function Dashboard() {
                         ))}
                     </tbody>
                   </table>
+
                   <button
                     className={styles.primaryButton}
                     onClick={() => navigate("history")}
@@ -241,12 +242,16 @@ export default function Dashboard() {
 
               <div className={styles.fabContainer}>
                 <div className={styles.fabActions}>
-                <button
-                className={styles.fabActionButton}
-                onClick={() => navigate("workout/new")}>
-                zarejestruj trening
-                </button>
-                  <button className={styles.fabActionButton}>
+                  <button
+                    className={styles.fabActionButton}
+                    onClick={() => navigate("workout/new")}
+                  >
+                    zarejestruj trening
+                  </button>
+                  <button
+                    className={styles.fabActionButton}
+                    onClick={() => navigate("measurement")}
+                  >
                     zarejestruj pomiary
                   </button>
                 </div>
