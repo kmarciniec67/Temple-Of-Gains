@@ -222,13 +222,19 @@ app.get("/api/workouts/stats", authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // 1) Ostatni trening + nazwa planu
     const [lastRows] = await pool.query(
       `
-      SELECT w.id, w.date, w.plan_id, wp.name AS plan_name
+      SELECT
+        w.id,
+        w.date,
+        w.plan_id,
+        wp.name AS plan_name
       FROM workouts w
+      JOIN workoutdetails wd ON wd.workout_id = w.id
       LEFT JOIN workoutplans wp ON wp.id = w.plan_id
       WHERE w.user_id = ?
+        AND wd.reps > 0
+        AND wd.weight > 0
       ORDER BY w.date DESC
       LIMIT 1
       `,
@@ -236,37 +242,71 @@ app.get("/api/workouts/stats", authenticateToken, async (req, res) => {
     );
 
     const lastWorkout = lastRows[0] || null;
-
-    // 2) Treningi w tym tygodniu (ISO week) + tonaż tygodnia (w tym tygodniu)
-    const [last7dRows] = await pool.query(
+    const [rows] = await pool.query(
       `
-  SELECT
-    COUNT(DISTINCT w.id) AS last7d_workouts_count,
-    COALESCE(SUM(COALESCE(wd.reps,0) * COALESCE(wd.weight,0)), 0) AS last7d_total_volume
-  FROM workouts w
-  LEFT JOIN workoutdetails wd ON wd.workout_id = w.id
-  WHERE w.user_id = ?
-    AND w.date >= (NOW() - INTERVAL 7 DAY)
-  `,
+      SELECT
+        COUNT(DISTINCT w.id) AS workouts_count,
+        COALESCE(SUM(wd.reps * wd.weight), 0) AS total_volume
+      FROM workouts w
+      JOIN workoutdetails wd ON wd.workout_id = w.id
+      WHERE w.user_id = ?
+        AND w.date >= (NOW() - INTERVAL 7 DAY)
+        AND wd.reps > 0
+        AND wd.weight > 0
+      `,
       [userId],
     );
 
-    const last7dWorkoutsCount = Number(
-      last7dRows[0]?.last7d_workouts_count || 0,
-    );
-    const last7dTotalVolume = Number(last7dRows[0]?.last7d_total_volume || 0);
+    const last7dWorkoutsCount = Number(rows[0]?.workouts_count || 0);
+    const last7dTotalVolume = Number(rows[0]?.total_volume || 0);
     const last7dAvgVolume =
       last7dWorkoutsCount > 0 ? last7dTotalVolume / last7dWorkoutsCount : 0;
 
     res.json({
       last_workout: lastWorkout,
+
+      week_workouts_count: last7dWorkoutsCount,
+
       last7d_workouts_count: last7dWorkoutsCount,
       last7d_total_volume: last7dTotalVolume,
       last7d_avg_volume: last7dAvgVolume,
     });
   } catch (err) {
-    console.error(err);
+    console.error("Dashboard stats error:", err);
     res.status(500).json({ error: "Database error" });
+  }
+});
+
+// usuwanie treningu z historii
+app.delete("/api/workouts/:id", authenticateToken, async (req, res) => {
+  const workoutId = req.params.id;
+  const userId = req.user.id;
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    await conn.query(`DELETE FROM workoutdetails WHERE workout_id = ?`, [
+      workoutId,
+    ]);
+
+    const [result] = await conn.query(
+      `DELETE FROM workouts WHERE id = ? AND user_id = ?`,
+      [workoutId, userId],
+    );
+
+    await conn.commit();
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Workout not found" });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    await conn.rollback();
+    res.status(500).json({ error: "Database error" });
+  } finally {
+    conn.release();
   }
 });
 
@@ -806,80 +846,79 @@ app.get("/api/history", authenticateToken, async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Database error" });
   }
-});  
+});
 
 // add Workout endpoint
 app.post("/api/workouts", authenticateToken, async (req, res) => {
-    const userId = req.user.id;
-    const { plan_id, date } = req.body;
-  
-    if (!date) {
-      return res.status(400).json({ error: "Data jest wymagana" });
-    }
-  
-    try {
-      const [result] = await pool.query(
-        "INSERT INTO workouts (user_id, plan_id, date) VALUES (?, ?, ?)",
-        [userId, plan_id ?? null, date]
-      );
-  
-      res.status(201).json({
-        success: true,
-        workout_id: result.insertId,
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Database error" });
-    }
-  });
+  const userId = req.user.id;
+  const { plan_id, date } = req.body;
+
+  if (!date) {
+    return res.status(400).json({ error: "Data jest wymagana" });
+  }
+
+  try {
+    const [result] = await pool.query(
+      "INSERT INTO workouts (user_id, plan_id, date) VALUES (?, ?, ?)",
+      [userId, plan_id ?? null, date],
+    );
+
+    res.status(201).json({
+      success: true,
+      workout_id: result.insertId,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
 
 // add workout set endpoint
 app.post("/api/workouts/:id/sets", authenticateToken, async (req, res) => {
-    const workoutId = Number(req.params.id);
-    const { exercise_id, set_number, reps, weight } = req.body;
-  
-    if (!exercise_id || !set_number) {
-      return res.status(400).json({ error: "Brak danych serii" });
-    }
-  
-    try {
-      await pool.query(
-        `INSERT INTO workoutdetails
+  const workoutId = Number(req.params.id);
+  const { exercise_id, set_number, reps, weight } = req.body;
+
+  if (!exercise_id || !set_number) {
+    return res.status(400).json({ error: "Brak danych serii" });
+  }
+
+  try {
+    await pool.query(
+      `INSERT INTO workoutdetails
          (workout_id, exercise_id, set_number, reps, weight)
          VALUES (?, ?, ?, ?, ?)`,
-        [workoutId, exercise_id, set_number, reps, weight]
-      );
-  
-      res.status(201).json({ success: true });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Database error" });
-    }
-  });
+      [workoutId, exercise_id, set_number, reps, weight],
+    );
 
-  app.get("/api/workouts/:id/plan", authenticateToken, async (req, res) => {
-    const workoutId = Number(req.params.id);
-    if (!Number.isFinite(workoutId)) return res.status(400).json({ error: "Invalid workout id" });
-  
-    try {
-      // Pobranie planu ćwiczeń przypisanego do tego treningu
-      const [rows] = await pool.query(
-        `SELECT e.id, e.name
+    res.status(201).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.get("/api/workouts/:id/plan", authenticateToken, async (req, res) => {
+  const workoutId = Number(req.params.id);
+  if (!Number.isFinite(workoutId))
+    return res.status(400).json({ error: "Invalid workout id" });
+
+  try {
+    // Pobranie planu ćwiczeń przypisanego do tego treningu
+    const [rows] = await pool.query(
+      `SELECT e.id, e.name
          FROM exercises e
          JOIN planexercises pe ON e.id = pe.exercise_id
          JOIN workouts w ON w.plan_id = pe.plan_id
          WHERE w.id = ?`,
-        [workoutId]
-      );
-  
-      res.json(rows); // Zwracamy tablicę ćwiczeń
-    } catch (err) {
-      console.error("Błąd pobierania planu treningu:", err);
-      res.status(500).json({ error: "Database error" });
-    }
-  });
-  
-  
+      [workoutId],
+    );
+
+    res.json(rows); // Zwracamy tablicę ćwiczeń
+  } catch (err) {
+    console.error("Błąd pobierania planu treningu:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
 
 // Endpoint zwraca workouts details
 app.get("/api/workouts", authenticateToken, async (req, res) => {
@@ -1012,7 +1051,7 @@ app.post("/api/workouts/:id/finish", authenticateToken, async (req, res) => {
        FROM workoutdetails wd
        JOIN workouts w ON w.id = wd.workout_id
        WHERE w.id = ? AND w.user_id = ?`,
-      [workoutId, userId]
+      [workoutId, userId],
     );
 
     if (!details.length) {
@@ -1021,7 +1060,7 @@ app.post("/api/workouts/:id/finish", authenticateToken, async (req, res) => {
 
     const totalVolume = details.reduce(
       (acc, s) => acc + (Number(s.reps) || 0) * (Number(s.weight) || 0),
-      0
+      0,
     );
     const exercisesCount = new Set(details.map((s) => s.exercise_id)).size;
 

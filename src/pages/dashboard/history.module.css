@@ -58,6 +58,36 @@
   color: var(--text-secondary);
 }
 
+.deleteButton {
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.12);
+  color: rgb(239, 68, 68);
+  cursor: pointer;
+  box-shadow: var(--card-shadow);
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.05s ease;
+}
+
+.deleteButton:hover {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.65);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.deleteButton:focus-visible {
+  outline: 3px solid rgba(239, 68, 68, 0.25);
+  outline-offset: 2px;
+}
+
+.deleteButton:active {
+  transform: translateY(1px);
+  box-shadow: var(--card-shadow);
+}
+
 /* stats dashboard */
 .historySummaryRow {
   display: flex;

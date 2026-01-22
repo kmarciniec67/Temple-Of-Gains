@@ -12,6 +12,25 @@ const History = () => {
 
   const { workouts, loading, error } = useWorkoutsList({ limit, offset });
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Czy na pewno chcesz usunąć ten trening?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      await fetch(`/api/workouts/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      window.location.reload();
+    } catch (err) {
+      alert("Błąd usuwania treningu");
+    }
+  };
+
   if (loading) return <p>Ładowanie historii...</p>;
   if (error) return <p>Błąd: {error}</p>;
   if (!workouts.length) return <p>Brak historii treningów.</p>;
@@ -28,7 +47,9 @@ const History = () => {
             onClick={() => navigate(`${w.id}`)}
             style={{ cursor: "pointer" }}
           >
-            <h2>Trening z dnia: {new Date(w.date).toLocaleString("pl-PL")}</h2>
+            <h2>
+              Trening z dnia: {new Date(w.date).toLocaleDateString("pl-PL")}
+            </h2>
 
             <p>Plan: {w.plan_name ?? `ID: ${w.plan_id}`}</p>
 
@@ -39,6 +60,15 @@ const History = () => {
                 Tonaż: {Math.round(w.total_volume ?? 0).toLocaleString("pl-PL")}{" "}
                 kg
               </span>
+              <button
+                className={styles.deleteButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(w.id);
+                }}
+              >
+                Usuń
+              </button>
             </div>
           </div>
         ))}
