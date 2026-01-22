@@ -642,6 +642,7 @@ app.post("/api/plans", authenticateToken, async (req, res) => {
     connection.release();
   }
 });
+
 // Endpoint do usuwania planów (DELETE)
 app.delete("/api/plans/:id", authenticateToken, async (req, res) => {
   const planId = req.params.id;
@@ -871,29 +872,6 @@ app.post("/api/workouts/:id/sets", authenticateToken, async (req, res) => {
   }
 });
 
-app.get("/api/workouts/:id/plan", authenticateToken, async (req, res) => {
-  const workoutId = Number(req.params.id);
-  if (!Number.isFinite(workoutId))
-    return res.status(400).json({ error: "Invalid workout id" });
-
-  try {
-    // Pobranie planu ćwiczeń przypisanego do tego treningu
-    const [rows] = await pool.query(
-      `SELECT e.id, e.name
-         FROM exercises e
-         JOIN planexercises pe ON e.id = pe.exercise_id
-         JOIN workouts w ON w.plan_id = pe.plan_id
-         WHERE w.id = ?`,
-      [workoutId],
-    );
-
-    res.json(rows); // Zwracamy tablicę ćwiczeń
-  } catch (err) {
-    console.error("Błąd pobierania planu treningu:", err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
 // Endpoint zwraca workouts details
 app.get("/api/workouts", authenticateToken, async (req, res) => {
   const userId = req.user.id;
@@ -933,6 +911,64 @@ app.get("/api/workouts", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+// Pobranie ćwiczeń dla konkretnego planu
+app.get("/api/plans/:id/exercises", authenticateToken, async (req, res) => {
+  const planId = Number(req.params.id);
+  if (!Number.isFinite(planId))
+    return res.status(400).json({ error: "Invalid plan id" });
+
+  try {
+    const [exercises] = await pool.query(
+      `SELECT e.id, e.name
+       FROM exercises e
+       JOIN planexercises pe ON e.id = pe.exercise_id
+       WHERE pe.plan_id = ?
+       ORDER BY pe.order_index`,
+      [planId]
+    );
+
+    res.json(exercises);
+  } catch (err) {
+    console.error("Błąd pobierania ćwiczeń planu:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+app.get("/api/workouts/:id/plan", authenticateToken, async (req, res) => {
+  const workoutId = Number(req.params.id);
+  if (!Number.isFinite(workoutId))
+    return res.status(400).json({ error: "Invalid workout id" });
+
+  try {
+    // Pobierz plan_id dla danego treningu
+    const [[workout]] = await pool.query(
+      "SELECT plan_id FROM workouts WHERE id = ?",
+      [workoutId]
+    );
+
+    if (!workout || !workout.plan_id) return res.json([]); // brak planu
+
+    const planId = workout.plan_id;
+
+    // Pobierz wszystkie ćwiczenia przypisane do planu
+    const [exercises] = await pool.query(
+      `SELECT e.id, e.name
+       FROM exercises e
+       JOIN planexercises pe ON e.id = pe.exercise_id
+       WHERE pe.plan_id = ?
+       ORDER BY pe.order_index`,
+      [planId]
+    );
+
+    res.json(exercises);
+    console.log("GET /workouts/:id/plan", workoutId);
+  } catch (err) {
+    console.error("Błąd pobierania planu treningu:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
+
 
 // Endpoint zwracający jeden treningowe
 app.get("/api/workouts/:id", authenticateToken, async (req, res) => {

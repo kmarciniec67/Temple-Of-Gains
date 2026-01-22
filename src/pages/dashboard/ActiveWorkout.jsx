@@ -2,90 +2,119 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./Workout.module.css";
 
+const API = "http://localhost:3000";
+
 export default function ActiveWorkout() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [planExercises, setPlanExercises] = useState([]);
-  const [exercises, setExercises] = useState([]);
-  const [query, setQuery] = useState("");
+  const [allExercises, setAllExercises] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState(null);
+  const [query, setQuery] = useState("");
   const [reps, setReps] = useState("");
   const [weight, setWeight] = useState("");
   const [sets, setSets] = useState([]);
+  const [error, setError] = useState(null);
 
-  // Pobranie planu ćwiczeń przypisanego do treningu
+  /* =============================
+     1. WORKOUT → PLAN → ĆWICZENIA
+  ============================= */
   useEffect(() => {
-    fetch(`/api/workouts/${id}/plan`, { credentials: "include" })
-      .then((res) => {
-        if (!res.ok) throw new Error("Błąd sieci: " + res.status);
-        return res.json();
-      })
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setPlanExercises(data);
-          setSelectedExercise(data[0]);
+    const loadPlanExercises = async () => {
+      try {
+        // 1️⃣ workout
+        const workoutRes = await fetch(`${API}/api/workouts/${id}`, {
+          credentials: "include",
+        });
+
+        if (!workoutRes.ok) return;
+
+        const workout = await workoutRes.json();
+        if (!workout.plan_id) return;
+
+        // 2️⃣ ćwiczenia planu
+        const planRes = await fetch(`${API}/api/workouts/${id}/plan`, {
+          credentials: "include"
+        });
+
+        if (!planRes.ok) throw new Error();
+
+        const exercises = await planRes.json();
+        setPlanExercises(exercises);
+        console.log("PLAN RESPONSE STATUS:", planRes.status);
+
+
+        if (exercises.length > 0) {
+          setSelectedExercise(exercises[0]);
         }
-      })
-      .catch((err) => console.error(err));
+      } catch {
+        setError("Nie udało się pobrać planu treningowego");
+      }
+    };
+
+    loadPlanExercises();
   }, [id]);
 
-  // Pobranie wszystkich ćwiczeń do wyszukiwania
+  /* =============================
+     WSZYSTKIE ĆWICZENIA
+  ============================= */
   useEffect(() => {
-    fetch("/api/exercises", { credentials: "include" })
-      .then((res) => res.json())
-      .then(setExercises)
-      .catch((err) => console.error(err));
+    fetch(`${API}/api/exercises`, { credentials: "include" })
+      .then((r) => r.json())
+      .then(setAllExercises);
   }, []);
 
-  const filteredExercises = exercises.filter((e) =>
+  const filtered = allExercises.filter((e) =>
     e.name.toLowerCase().includes(query.toLowerCase())
   );
 
+  /* =============================
+     DODAJ SERIĘ
+  ============================= */
   const addSet = async () => {
     if (!selectedExercise || !reps) return;
 
     const setNumber =
       sets.filter((s) => s.exercise.id === selectedExercise.id).length + 1;
 
-    try {
-      const res = await fetch(`/api/workouts/${id}/sets`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          exercise_id: selectedExercise.id,
-          set_number: setNumber,
-          reps: Number(reps),
-          weight: Number(weight) || 0,
-        }),
-      });
+    await fetch(`${API}/api/workouts/${id}/sets`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        exercise_id: selectedExercise.id,
+        set_number: setNumber,
+        reps: Number(reps),
+        weight: Number(weight) || 0,
+      }),
+    });
 
-      if (!res.ok) throw new Error("Błąd przy dodawaniu serii");
+    setSets((prev) => [
+      ...prev,
+      {
+        exercise: selectedExercise,
+        set_number: setNumber,
+        reps,
+        weight,
+      },
+    ]);
 
-      setSets((prev) => [
-        ...prev,
-        {
-          exercise: selectedExercise,
-          set_number: setNumber,
-          reps,
-          weight,
-        },
-      ]);
-
-      setReps("");
-      setWeight("");
-    } catch (err) {
-      console.error(err);
-    }
+    setReps("");
+    setWeight("");
   };
 
+  /* =============================
+     UI
+  ============================= */
   return (
     <div className={styles.pageContent}>
       <div className={styles.cardCentered}>
         <h1 className={styles.cardTitle}>Trening #{id}</h1>
 
-        {/* Plan ćwiczeń */}
+        {error && <p className={styles.error}>{error}</p>}
+
+        {/* PLAN */}
         {planExercises.length > 0 && (
           <div className={styles.planBox}>
             <h3 className={styles.sectionTitle}>Ćwiczenia z planu</h3>
@@ -96,10 +125,7 @@ export default function ActiveWorkout() {
                   className={`${styles.planExerciseButton} ${
                     selectedExercise?.id === e.id ? styles.active : ""
                   }`}
-                  onClick={() => {
-                    setSelectedExercise(e);
-                    setQuery("");
-                  }}
+                  onClick={() => setSelectedExercise(e)}
                 >
                   {e.name}
                 </button>
@@ -108,17 +134,18 @@ export default function ActiveWorkout() {
           </div>
         )}
 
-        {/* Wyszukiwarka */}
+        {/* SEARCH */}
         <div className={styles.searchBox}>
           <input
             className={styles.input}
-            placeholder="Szukaj ćwiczenia lub dodaj customowe..."
+            placeholder="Szukaj ćwiczenia..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
+
           {query && (
             <div className={styles.searchResults}>
-              {filteredExercises.slice(0, 6).map((e) => (
+              {filtered.slice(0, 6).map((e) => (
                 <button
                   key={e.id}
                   className={styles.searchItem}
@@ -134,10 +161,13 @@ export default function ActiveWorkout() {
           )}
         </div>
 
-        {/* Formularz dodawania serii */}
+        {/* FORM */}
         {selectedExercise && (
           <div className={styles.setForm}>
-            <div className={styles.exerciseName}>{selectedExercise.name}</div>
+            <div className={styles.exerciseName}>
+              {selectedExercise.name}
+            </div>
+
             <div className={styles.setRow}>
               <input
                 className={styles.input}
@@ -152,28 +182,25 @@ export default function ActiveWorkout() {
                 onChange={(e) => setWeight(e.target.value)}
               />
             </div>
+
             <button className={styles.primaryButton} onClick={addSet}>
               Dodaj serię
             </button>
           </div>
         )}
 
-        {/* Wyświetlanie dodanych serii */}
+        {/* SETS */}
         {sets.length > 0 && (
           <div className={styles.addedSets}>
             <h3 className={styles.sectionTitle}>Dodane serie</h3>
             {sets.map((s, i) => (
               <div key={i} className={styles.setItem}>
-                <span className={styles.setExercise}>{s.exercise.name}</span>
-                <span className={styles.setDetails}>
-                  {s.set_number} seria • {s.reps} powt. • {s.weight} kg
-                </span>
+                {s.exercise.name} — {s.reps} × {s.weight} kg
               </div>
             ))}
           </div>
         )}
 
-        {/* Zakończenie treningu */}
         <button
           className={styles.finishButton}
           onClick={() => navigate("/dashboard")}
