@@ -51,6 +51,7 @@ const pool = mysql.createPool({
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "",
   database: process.env.DB_NAME || "temple_of_gains",
+  charset: "utf8mb4",
 });
 
 // Statyczne pliki Reacta
@@ -222,6 +223,7 @@ app.get("/api/workouts/stats", authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
+    // 1. Ostatni REALNY trening
     const [lastRows] = await pool.query(
       `
       SELECT
@@ -242,6 +244,8 @@ app.get("/api/workouts/stats", authenticateToken, async (req, res) => {
     );
 
     const lastWorkout = lastRows[0] || null;
+
+    // 2. Statystyki – TEN TYDZIEŃ (ISO)
     const [rows] = await pool.query(
       `
       SELECT
@@ -250,26 +254,25 @@ app.get("/api/workouts/stats", authenticateToken, async (req, res) => {
       FROM workouts w
       JOIN workoutdetails wd ON wd.workout_id = w.id
       WHERE w.user_id = ?
-        AND w.date >= (NOW() - INTERVAL 7 DAY)
+        AND YEARWEEK(w.date, 1) = YEARWEEK(CURDATE(), 1)
         AND wd.reps > 0
         AND wd.weight > 0
       `,
       [userId],
     );
 
-    const last7dWorkoutsCount = Number(rows[0]?.workouts_count || 0);
-    const last7dTotalVolume = Number(rows[0]?.total_volume || 0);
-    const last7dAvgVolume =
-      last7dWorkoutsCount > 0 ? last7dTotalVolume / last7dWorkoutsCount : 0;
+    const workoutsCount = Number(rows[0]?.workouts_count || 0);
+    const totalVolume = Number(rows[0]?.total_volume || 0);
 
     res.json({
       last_workout: lastWorkout,
 
-      week_workouts_count: last7dWorkoutsCount,
+      // spójne nazewnictwo z UI
+      week_workouts_count: workoutsCount,
 
-      last7d_workouts_count: last7dWorkoutsCount,
-      last7d_total_volume: last7dTotalVolume,
-      last7d_avg_volume: last7dAvgVolume,
+      last7d_workouts_count: workoutsCount,
+      last7d_total_volume: totalVolume,
+      last7d_avg_volume: workoutsCount > 0 ? totalVolume / workoutsCount : null,
     });
   } catch (err) {
     console.error("Dashboard stats error:", err);
@@ -924,7 +927,7 @@ app.get("/api/plans/:id/exercises", authenticateToken, async (req, res) => {
        JOIN planexercises pe ON e.id = pe.exercise_id
        WHERE pe.plan_id = ?
        ORDER BY pe.order_index`,
-      [planId]
+      [planId],
     );
 
     res.json(exercises);
@@ -943,7 +946,7 @@ app.get("/api/workouts/:id/plan", authenticateToken, async (req, res) => {
     // Pobierz plan_id dla danego treningu
     const [[workout]] = await pool.query(
       "SELECT plan_id FROM workouts WHERE id = ?",
-      [workoutId]
+      [workoutId],
     );
 
     if (!workout || !workout.plan_id) return res.json([]); // brak planu
@@ -957,7 +960,7 @@ app.get("/api/workouts/:id/plan", authenticateToken, async (req, res) => {
        JOIN planexercises pe ON e.id = pe.exercise_id
        WHERE pe.plan_id = ?
        ORDER BY pe.order_index`,
-      [planId]
+      [planId],
     );
 
     res.json(exercises);
@@ -967,8 +970,6 @@ app.get("/api/workouts/:id/plan", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
-
-
 
 // Endpoint zwracający jeden treningowe
 app.get("/api/workouts/:id", authenticateToken, async (req, res) => {
