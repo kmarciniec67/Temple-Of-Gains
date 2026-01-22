@@ -1,0 +1,92 @@
+.pageContent {
+    padding: 0 2rem 2.5rem;
+    margin-top: calc(var(--navbar-height, 4rem) + 1.5rem);
+    display: flex;
+    justify-content: center;
+  }
+  
+  .card {
+    width: 100%;
+    max-width: 520px;
+    background: var(--bg-card-dashboard);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 1.25rem;
+    box-shadow: var(--card-shadow);
+  }
+  
+  .title {
+    margin: 0 0 1.2rem;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    text-align: center;
+  }
+  
+  .input,
+  .textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .textarea {
+    resize: vertical;
+    min-height: 70px;
+  }
+
+  
+  .button {
+    width: 100%;
+    appearance: none;
+    border: none;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    padding: 12px 14px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: var(--card-shadow);
+  }
+  
+  .exerciseList {
+    margin: 1rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .exerciseItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+  
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  
+  .exerciseItem input {
+    display: none;
+  }
+  
+  .exerciseItem:hover {
+    background: var(--bg-hover);
+  }
+  
+  .exerciseItem input:checked + span {
+    font-weight: 800;
+    color: var(--accent-color);
+  }
+  

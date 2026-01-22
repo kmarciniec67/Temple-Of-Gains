@@ -74,7 +74,16 @@ const Plans = () => {
     <div className={styles.plansPage}>
       <div className={styles.layoutContainer}>
         <div className={styles.listColumn}>
-          <h1 className={styles.headerTitle}>Twoje Plany</h1>
+        <div className={styles.listHeader}>
+  <h1 className={styles.headerTitle}>Twoje Plany</h1>
+
+  <button
+    className={styles.createButton}
+    onClick={() => navigate("/dashboard/plans/new")}
+  >
+    + Nowy plan
+  </button>
+</div>
 
           <div className={styles.searchWrapper}>
             <FaSearch className={styles.searchIcon} />

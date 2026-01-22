@@ -241,9 +241,11 @@ export default function Dashboard() {
 
               <div className={styles.fabContainer}>
                 <div className={styles.fabActions}>
-                  <button className={styles.fabActionButton}>
-                    zarejestruj trening
-                  </button>
+                <button
+                className={styles.fabActionButton}
+                onClick={() => navigate("workout/new")}>
+                zarejestruj trening
+                </button>
                   <button className={styles.fabActionButton}>
                     zarejestruj pomiary
                   </button>
